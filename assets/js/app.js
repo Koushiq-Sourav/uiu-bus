@@ -85,14 +85,14 @@ function initScrollReveal() {
       'main section, #live-location-section > div, #about-section > div, #driver-dashboard > div, footer .container > div'
     );
     if (!blocks.length) return;
-    // Sibling stagger: children sharing a parent cascade 0/70/140ms.
+    // Sibling stagger: children sharing a parent cascade subtly.
     const sibIndex = new Map();
     blocks.forEach(el => {
       const key = el.parentNode;
       const i = sibIndex.get(key) || 0;
       sibIndex.set(key, i + 1);
       el.classList.add('reveal');
-      el.style.transitionDelay = `${Math.min(i, 3) * 70}ms`;
+      el.style.transitionDelay = `${Math.min(i, 2) * 50}ms`;
     });
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
@@ -102,7 +102,17 @@ function initScrollReveal() {
         }
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    blocks.forEach(el => io.observe(el));
+    blocks.forEach(el => {
+      // Above-the-fold blocks show instantly — no blank flash on load.
+      try {
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight && r.bottom > 0) {
+          el.classList.add('visible');
+          return;
+        }
+      } catch {}
+      io.observe(el);
+    });
   } catch {}
 }
 

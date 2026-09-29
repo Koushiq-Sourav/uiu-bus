@@ -135,7 +135,7 @@ function showRouteInfoCard(routeData, { routeTitle, routeStopsList, routeDisplay
     routeStopsList.appendChild(li);
   });
   routeDisplaySection.classList.remove('hidden');
-  routeDisplaySection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  routeDisplaySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   if (typeof updateStopTimes === 'function') updateStopTimes();
 }
 

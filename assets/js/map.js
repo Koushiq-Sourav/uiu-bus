@@ -187,7 +187,7 @@ function initLiveLocationButtons() {
       if (!liveRouteData[routeKey]) return;
       showLiveRoute(routeKey);
       const liveSection = document.getElementById("live-location-section");
-      if (liveSection) liveSection.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (liveSection) liveSection.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
   document.querySelectorAll(".live-route-btn").forEach(button => {
