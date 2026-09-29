@@ -7,5 +7,6 @@ Thumbs.db
 # Local env / uploads (never commit real credentials or user data)
 .env
 *.log
+api/telegram_local.php
 data/uploads/*
 !data/uploads/.gitkeep

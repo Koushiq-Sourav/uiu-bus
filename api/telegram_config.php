@@ -14,11 +14,17 @@
  * Used by: save_telegram.php, bus_location.php, notify_nearby.php
  */
 const UIU_TELEGRAM_API_BASE = 'https://api.telegram.org/bot';
-// Token: hosting env UIU_TELEGRAM_BOT_TOKEN wins (Render/Docker), else the
-// pasted value below (XAMPP: chat @BotFather -> /newbot -> paste here).
+// Token priority: hosting env UIU_TELEGRAM_BOT_TOKEN first (Render/Docker),
+// then api/telegram_local.php (XAMPP secret file, git-ignored, never pushed),
+// else the placeholder below (alerts stay in demo-preview mode).
 if (!defined('UIU_TELEGRAM_BOT_TOKEN')) {
     $envToken = trim((string)(getenv('UIU_TELEGRAM_BOT_TOKEN') ?: ''));
-    define('UIU_TELEGRAM_BOT_TOKEN', $envToken !== '' ? $envToken : 'PASTE_BOT_TOKEN_HERE');
+    if ($envToken === '' && is_file(__DIR__ . '/telegram_local.php')) {
+        require __DIR__ . '/telegram_local.php'; // defines UIU_TELEGRAM_BOT_TOKEN
+    }
+    if (!defined('UIU_TELEGRAM_BOT_TOKEN')) {
+        define('UIU_TELEGRAM_BOT_TOKEN', $envToken !== '' ? $envToken : 'PASTE_BOT_TOKEN_HERE');
+    }
 }
 const UIU_NEARBY_RADIUS_M = 500;
 /** ETA alert settings. ETA is an estimate from straight-line GPS distance. */
