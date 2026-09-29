@@ -460,6 +460,15 @@ function timingSecToHM(sec) {
   return `${h}:${m}`;
 }
 
+/* "08:00 AM" (routes.js demo) -> "08:00:00" (DB TIME format). */
+function busTimeTo24(t) {
+  const m = /^\s*(\d{1,2}):(\d{2})\s*([AP]M)?\s*$/i.exec(t || '');
+  if (!m) return '08:00:00';
+  let h = Number(m[1]) % 12;
+  if (/pm/i.test(m[3] || '')) h += 12;
+  return `${String(h).padStart(2, '0')}:${m[2]}:00`;
+}
+
 function getActiveTrip() {
   const id = (typeof getDriverActiveTripId === 'function') ? getDriverActiveTripId() : null;
   if (!id || !Array.isArray(driverTripsCache)) return null;
@@ -476,7 +485,7 @@ function refreshTimingPanel() {
     updateArrivalPreview();
     return;
   }
-  if (label) label.innerText = `${trip.route_code || trip.route_name || ''} · ${trip.service_date || ''} · Trip #${trip.trip_id}`;
+  if (label) label.innerText = `${trip.route_code || trip.route_name || ''} · ${trip.service_date || ''} · Trip #${trip.trip_id}${Number(trip.trip_id) < 0 ? ' (demo)' : ''}`;
   if (input && document.activeElement !== input) {
     const cur = (trip.departure_time || '').slice(0, 5);
     if (/^\d{2}:\d{2}$/.test(cur)) input.value = cur;
@@ -531,6 +540,10 @@ async function saveDriverTiming() {
   setStatus('Calculating road route…');
   const calc = await updateArrivalPreview();
   if (!calc) { setStatus('Enter a valid departure time (HH:MM).'); return; }
+  if (Number(trip.trip_id) < 0 || String(currentUser?.token || '').startsWith('demo-')) {
+    setStatus(`Demo preview — departs ${calc.departure.slice(0, 5)}, arrives ~${calc.arrival.slice(0, 5)}. Connect XAMPP to save it live.`);
+    return;
+  }
   setStatus('Saving…');
   try {
     const res = await fetch(`${API_BASE}driver_update_trip.php`, {
@@ -565,15 +578,34 @@ function renderDriverDashboard(data) {
   driverTripsCache = trips;
   list.innerHTML = '';
   if (!trips.length) {
-    // Demo fallback: routes with default times
+    // Demo fallback (no backend): selectable demo trips per route so the
+    // departure input + road arrival preview still work offline.
+    // Negative IDs can never collide with real trip_ids; Save is blocked
+    // in demo with a "connect XAMPP" note instead of failing silently.
     if (typeof busRoutes !== 'undefined') {
-      Object.entries(busRoutes).forEach(([key, r]) => {
+      const demoTrips = Object.entries(busRoutes).map(([key, r], i) => ({
+        trip_id: -(i + 1),
+        route_code: key,
+        route_name: r.title,
+        service_date: 'demo',
+        departure_time: busTimeTo24(r.departure),
+        arrival_time: busTimeTo24(r.arrival),
+        seats_left: '?'
+      }));
+      driverTripsCache = demoTrips;
+      demoTrips.forEach(t => {
         const li = document.createElement('li');
-        li.className = 'driver-trip-row';
-        li.innerHTML = `<span class="font-bold">${key}</span><span>${r.title}</span><span>Dep ${r.departure} · Arr ${r.arrival}</span>`;
+        const isActive = Number(t.trip_id) === getDriverActiveTripId();
+        li.className = 'driver-trip-row' + (isActive ? ' driver-trip-active' : '');
+        li.setAttribute('data-trip-id', String(t.trip_id));
+        li.innerHTML = `<span class="font-bold">${t.route_code}</span><span>${t.route_name}</span><span>Dep ${t.departure_time.slice(0, 5)} · Arr ${t.arrival_time.slice(0, 5)} · demo</span>
+          <span class="driver-trip-live badge badge-success gap-1 ${isActive ? '' : 'hidden'}">● LIVE bus marker</span>
+          <button type="button" class="btn btn-xs driver-trip-set ${isActive ? 'hidden' : ''}">Set Active</button>`;
+        li.querySelector('.driver-trip-set')?.addEventListener('click', () => setDriverActiveTripId(t.trip_id));
         list.appendChild(li);
       });
-      refreshTimingPanel();
+      if (!demoTrips.some(t => Number(t.trip_id) === getDriverActiveTripId())) setDriverActiveTripId(demoTrips[0].trip_id);
+      else refreshTimingPanel();
       return;
     }
     list.innerHTML = '<li class="text-sm text-slate-500">No trips scheduled today.</li>';
@@ -601,7 +633,11 @@ function renderDriverDashboard(data) {
     list.appendChild(li);
   });
   // Auto-select first trip so sharing always has a target (driver can change).
-  if (!getDriverActiveTripId() && trips.length) setDriverActiveTripId(trips[0].trip_id);
+  // Also repairs a stale stored id (e.g. demo -1 lingering after XAMPP came back).
+  if ((!getDriverActiveTripId() || !trips.some(t => Number(t.trip_id) === getDriverActiveTripId())) && trips.length) {
+    setDriverActiveTripId(trips[0].trip_id);
+    return; // setDriverActiveTripId already refreshes the panel
+  }
   refreshTimingPanel();
 }
 
