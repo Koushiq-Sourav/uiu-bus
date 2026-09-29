@@ -70,3 +70,12 @@ try {
 // --- Map Constants ---
 const UIU_LOCATION = { lat: 23.7966, lng: 90.4495 };
 let currentLiveRoute = "Dhanmondi";
+
+/* Local service date (YYYY-MM-DD) for ALL trip queries.
+   Must be local — toISOString() is UTC and shows yesterday's trips
+   in the evening (Dhaka = UTC+6), so driver retimes would never match
+   the student's trip. Backend CURDATE() is server-local too. */
+function localToday() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}

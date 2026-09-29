@@ -13,7 +13,7 @@
 
 async function loadTripAndSeats() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = (typeof localToday === 'function') ? localToday() : new Date().toISOString().split('T')[0];
     const tripResponse = await fetch(
       `${API_BASE}get_trip.php?route=${encodeURIComponent(currentRoute)}&date=${today}`
     );
@@ -225,7 +225,7 @@ function startSeatPolling() {
 async function refreshRouteAvailability() {
   let data = null;
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = (typeof localToday === 'function') ? localToday() : new Date().toISOString().split('T')[0];
     const res = await fetch(`${API_BASE}route_availability.php?date=${encodeURIComponent(today)}`);
     data = await res.json();
     if (!res.ok || !data.success || !Array.isArray(data.routes)) return;
