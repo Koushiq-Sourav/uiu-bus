@@ -1,0 +1,8 @@
+.git/
+.gitignore
+Dockerfile
+render.yaml
+README_DEPLOY.md
+docs/
+images/
+*.md

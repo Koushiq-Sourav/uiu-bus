@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: uiu-bus
+    runtime: docker
+    plan: free
+    # Docker builds ./Dockerfile (php-apache serving index.html + api/).
+    # Pair with any hosted MySQL (Railway / PlanetScale / ClearDB) and set:
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: 3306
+      - key: DB_NAME
+        value: uiu_shuttle
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false

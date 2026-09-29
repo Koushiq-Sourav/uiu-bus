@@ -7,12 +7,15 @@
  * Used by: login/register/driver_login/logout, get_seats,
  *           create_booking, user_bookings, driver_location, driver_dashboard
  */
-// XAMPP / MariaDB default credentials are commonly root with no password.
-// Change these values if your XAMPP MySQL account is different.
-$host = '127.0.0.1';
-$db   = 'uiu_shuttle';
-$user = 'root';
-$pass = '';
+// DB credentials: env vars on hosting (Render/Railway/Docker), XAMPP
+// defaults locally (127.0.0.1 / uiu_shuttle / root / blank password).
+$host = getenv('DB_HOST') ?: '127.0.0.1';
+$db   = getenv('DB_NAME') ?: 'uiu_shuttle';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
+if (($port = getenv('DB_PORT')) !== false && $port !== '') {
+    $host .= ';port=' . $port;
+}
 
 header('Content-Type: application/json; charset=utf-8');
 
