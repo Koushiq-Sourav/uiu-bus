@@ -627,6 +627,20 @@ html[data-theme='dark'] footer.bg-slate-900 { background-color: #020617; }
    ========================================================= */
 html { scroll-behavior: smooth; }
 
+/* Simple snap-scroll: each card settles into view (gentle proximity,
+   never forced). Navbar offset kept via scroll-padding. */
+html {
+  scroll-snap-type: y proximity;
+  scroll-padding-top: 96px;
+}
+
+main section,
+#live-location-section,
+#about-section {
+  scroll-snap-align: start;
+  scroll-margin-top: 96px;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(26px);
@@ -640,7 +654,7 @@ html { scroll-behavior: smooth; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html { scroll-behavior: auto; scroll-snap-type: none; }
   .reveal {
     opacity: 1;
     transform: none;
