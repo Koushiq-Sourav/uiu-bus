@@ -257,6 +257,7 @@ async function refreshRouteAvailability() {
       currentArrivalTime = cur.arrival_time;
       setInnerText('display-arrival-time', cur.arrival_time);
     }
+    if (typeof updateStopTimes === 'function') { try { updateStopTimes(); } catch {} }
   }
 }
 

@@ -121,6 +121,7 @@ async function selectRoute(routeKey) {
   showRouteInfoCard(routeData, { routeTitle, routeStopsList, routeDisplaySection });
   updateShuttleInfoSection(routeKey, routeData, { displayRouteName, displayBoardingPoints });
   await loadTripAndSeats();
+  if (typeof updateStopTimes === 'function') updateStopTimes();
   validateNextButton();
 }
 
@@ -130,11 +131,70 @@ function showRouteInfoCard(routeData, { routeTitle, routeStopsList, routeDisplay
   routeData.stops.forEach((stop, index) => {
     const li = document.createElement('li');
     li.className = 'bg-slate-800/80 border border-slate-700/60 p-3 rounded-xl flex items-center gap-3 text-sm';
-    li.innerHTML = `<span class="bg-lime-500/20 text-lime-400 font-bold w-6 h-6 rounded-full flex items-center justify-center text-xs">${index + 1}</span> <span>${stop}</span>`;
+    li.innerHTML = `<span class="bg-lime-500/20 text-lime-400 font-bold w-6 h-6 rounded-full flex items-center justify-center text-xs">${index + 1}</span> <span class="flex-1">${stop}</span> <span class="stop-time text-lime-300/90 text-xs font-semibold whitespace-nowrap">…</span>`;
     routeStopsList.appendChild(li);
   });
   routeDisplaySection.classList.remove('hidden');
   routeDisplaySection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (typeof updateStopTimes === 'function') updateStopTimes();
+}
+
+/* Per-stoppage arrival times: departure (driver live) + road duration
+   spread evenly across stops. First stop = departure, last = arrival. */
+let stopTimesToken = 0;
+function parseDepSec(v) {
+  v = (v || '').trim();
+  let m = /^\s*(\d{1,2}):(\d{2})\s*([AP]M)?\s*$/i.exec(v);
+  if (m) {
+    let h = Number(m[1]) % 12;
+    if (/pm/i.test(m[3] || '')) h += 12;
+    // "08:00" without AM/PM in this project means morning.
+    if (!m[3] && Number(m[1]) >= 1 && Number(m[1]) <= 11) h = Number(m[1]);
+    if (!m[3] && Number(m[1]) === 12) h = 12;
+    return h * 3600 + Number(m[2]) * 60;
+  }
+  m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(v);
+  if (m) return Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3] || 0);
+  return null;
+}
+
+function fmtStopTime(sec) {
+  sec = ((Math.round(sec) % 86400) + 86400) % 86400;
+  let h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2, '0')} ${ap}`;
+}
+
+async function updateStopTimes() {
+  const my = ++stopTimesToken;
+  const list = document.getElementById('route-stops-list');
+  if (!list || !list.children.length) return;
+  const routeData = (typeof busRoutes !== 'undefined') ? busRoutes[currentRoute] : null;
+  if (!routeData || !routeData.stops.length) return;
+  const depSec = parseDepSec(currentDepartureTime || routeData.departure || '');
+  if (depSec === null) return;
+  let durationS = null, live = false;
+  try {
+    if (typeof getRouteStats === 'function') {
+      const st = await getRouteStats(currentRoute);
+      if (my !== stopTimesToken) return;
+      if (st && Number.isFinite(st.durationS)) { durationS = st.durationS; live = !!st.live; }
+    }
+  } catch {}
+  if (durationS === null) {
+    const a = parseDepSec(currentArrivalTime || routeData.arrival || '');
+    durationS = (a !== null && a > depSec) ? (a - depSec) : 90 * 60;
+  }
+  const n = routeData.stops.length;
+  [...list.children].forEach((li, i) => {
+    const el = li.querySelector('.stop-time');
+    if (!el) return;
+    const t = depSec + (n === 1 ? 0 : durationS * (i / (n - 1)));
+    el.innerText = `≈ ${fmtStopTime(t)}${live ? '' : '*'}`;
+  });
+  const badge = document.getElementById('route-badge');
+  if (badge) badge.innerText = live ? 'UIU Shuttle Line · live road times' : 'UIU Shuttle Line · schedule times';
 }
 
 function updateShuttleInfoSection(routeKey, routeData, { displayRouteName, displayBoardingPoints }) {
