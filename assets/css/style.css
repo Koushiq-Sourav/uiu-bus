@@ -1,0 +1,619 @@
+/* =========================================================
+   PARTITION INDEX (match index.html & JS partitions)
+   1. FONTS / BASE
+   2. TYPOGRAPHY
+   3. NAV / LOGIN MODAL
+   4. HERO
+   5. ROUTE INFO
+   6. SEAT CHOOSING
+   7. BOOKING
+   8. CAROUSEL
+   9. LIVE LOCATION
+   ========================================================= */
+
+/* =========================================================
+   1. FONTS
+   ========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* =========================================================
+   1. BASE RESET
+   ========================================================= */
+html {
+  scroll-behavior: smooth;
+}
+
+/* =========================================================
+   2. TYPOGRAPHY UTILITIES  [PARTITION: PRESENTATION]
+   ========================================================= */
+.font-inter {
+  font-family: "Inter", sans-serif;
+}
+
+.font-raleway {
+  font-family: "Raleway", sans-serif;
+}
+
+/* =========================================================
+   7. BOOKING SUMMARY LIST  [PARTITION: BOOKING]
+   ========================================================= */
+#booking-seat-container li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  color: #475569;
+}
+
+/* =========================================================
+   4. HERO SECTION BACKGROUND  [PARTITION: HERO]
+   ========================================================= */
+.banner-hero {
+  background-image: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('../images/banner.png');
+  background-color: #1e293b;
+  background-size: cover;
+  background-position: center;
+}
+
+/* =========================================================
+   6. SEAT BUTTON STATES  [PARTITION: SEAT CHOOSING]
+   ========================================================= */
+.seats {
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.seats:hover {
+  cursor: pointer;
+}
+
+.seats:active {
+  transform: scale(0.95);
+}
+
+.seats:focus-visible {
+  outline: 2px solid #84cc16;
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   8. CAROUSEL  [PARTITION: PRESENTATION]
+   ========================================================= */
+.carousel {
+  scroll-behavior: smooth;
+}
+
+.carousel-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.carousel .btn-circle {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.carousel .btn-circle:hover {
+  transform: scale(1.08);
+}
+
+/* =========================================================
+   5. ROUTE INFO CARD ANIMATION  [PARTITION: ROUTES]
+   ========================================================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* =========================================================
+   7. NEXT BUTTON STATE  [PARTITION: BOOKING]
+   ========================================================= */
+#next-btn:disabled {
+  background-color: #84cc16 !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#next-btn:not(:disabled) {
+  opacity: 1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* =========================================================
+   GLOBAL RESPONSIVE  [PARTITION: PRESENTATION]
+   ========================================================= */
+@media screen and (max-width: 640px) {
+  .seats {
+    font-size: 0.85rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* =========================================================
+   9. LIVE LOCATION PANEL  [PARTITION: LIVE LOCATION]
+   (Generic UI chrome — Leaflet tiles styled separately)
+   ========================================================= */
+.live-route-selector {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.live-route-btn {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #334155;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.live-route-btn:hover {
+  border-color: #84cc16;
+  color: #65a30d;
+  background: #f7fee7;
+}
+
+.live-route-btn.active {
+  background: #84cc16;
+  border-color: #84cc16;
+  color: #ffffff;
+}
+
+.live-location-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 18px;
+  margin-bottom: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  font-family: "Inter", sans-serif;
+}
+
+.live-location-status > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.live-location-status span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.live-location-status strong {
+  color: #0f172a;
+  font-size: 14px;
+}
+
+#live-location-status {
+  color: #65a30d;
+}
+
+.live-map {
+  width: 100%;
+  height: 480px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #e2e8f0;
+}
+
+.live-map-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Responsive */
+
+@media screen and (max-width: 768px) {
+
+  .live-route-selector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .live-location-status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .live-map {
+    height: 400px;
+  }
+
+  .live-map-actions {
+    flex-direction: column;
+  }
+
+  .live-map-actions button {
+    width: 100%;
+  }
+
+}
+
+@media screen and (max-width: 480px) {
+
+  .live-route-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .live-map {
+    height: 350px;
+  }
+
+}
+
+/* =========================================================
+   3. LOGIN MODAL (LEGACY ID — KEPT FOR COMPAT)  [PARTITION: AUTH]
+   ========================================================= */
+#login-modal.flex {
+  display: flex;
+}
+
+#login-error {
+  min-height: 1.2rem;
+}
+
+#auth-badge {
+  transition: all 0.2s ease;
+}
+
+/* =========================================================
+   11. TELEGRAM ALERTS  [PARTITION: TELEGRAM]
+   ========================================================= */
+.bus-sim-icon {
+  font-size: 26px;
+  line-height: 30px;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+#telegram-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+  max-width: min(92vw, 560px);
+  background: #0f172a;
+  color: #ffffff;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+
+#telegram-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* =========================================================
+   3. AUTH PORTAL (OVERLAY)  [PARTITION: AUTH]
+   ========================================================= */
+#auth-modal.flex {
+  display: flex;
+}
+
+#portal-login-error,
+#portal-login-success,
+#portal-signup-error,
+#portal-signup-success,
+#portal-driver-error {
+  min-height: 1.2rem;
+}
+
+#driver-location-status {
+  line-height: 1.6;
+}
+
+/* =========================================================
+   12. ABOUT SECTION  [PARTITION: ABOUT]
+   ========================================================= */
+.about-feature {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.about-feature-title {
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.about-feature-text {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* =========================================================
+   13. SEARCH RESULTS  [PARTITION: SEARCH]
+   ========================================================= */
+.search-result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-result-card:hover {
+  border-color: #84cc16;
+  background: #f7fee7;
+  transform: translateY(-1px);
+}
+
+.search-result-route {
+  font-weight: 800;
+  color: #65a30d;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.search-result-title {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.search-result-stops {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.search-empty {
+  color: #64748b;
+  font-size: 14px;
+  padding: 12px 4px;
+}
+
+/* =========================================================
+   14. MY BOOKINGS  [PARTITION: MY BOOKINGS]
+   ========================================================= */
+#my-bookings-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.my-booking-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #334155;
+  font-size: 14px;
+}
+
+/* =========================================================
+   15. DRIVER DASHBOARD  [PARTITION: DRIVER]
+   ========================================================= */
+.driver-stat {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.driver-stat span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.driver-stat strong {
+  color: #0f172a;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.driver-status-on {
+  background: #84cc16;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-family: "Inter", sans-serif;
+}
+
+.driver-status-off {
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-family: "Inter", sans-serif;
+}
+
+#driver-trips-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.driver-trip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #334155;
+  font-size: 14px;
+}
+
+.driver-trip-active {
+  border-color: #84cc16;
+  background: #f7fee7;
+  box-shadow: 0 0 0 1px #84cc16 inset;
+}
+
+.bus-live-icon {
+  font-size: 26px;
+  line-height: 30px;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+/* =========================================================
+   16. DARK MODE — html[data-theme='dark']
+   ---------------------------------------------------------
+   DaisyUI components (btn/input/card/navbar) follow
+   data-theme automatically. The overrides below cover the
+   hard-coded Tailwind palette classes used in this project.
+   Specificity (attribute + class) beats the CDN utilities.
+   Persisted via localStorage 'uiu_bus_theme'.
+   ========================================================= */
+html[data-theme='dark'] body {
+  background-color: #020617;
+  color: #e2e8f0;
+}
+
+html[data-theme='dark'] .bg-white { background-color: #1e293b; }
+html[data-theme='dark'] .bg-slate-50 { background-color: #0f172a; }
+html[data-theme='dark'] .bg-slate-100 { background-color: #1e293b; }
+html[data-theme='dark'] .bg-slate-200 { background-color: #334155; }
+html[data-theme='dark'] .bg-slate-300 { background-color: #475569; }
+html[data-theme='dark'] .bg-slate-800 { background-color: #0f172a; }
+html[data-theme='dark'] .bg-slate-900 { background-color: #020617; }
+
+html[data-theme='dark'] .text-slate-400 { color: #94a3b8; }
+html[data-theme='dark'] .text-slate-500 { color: #94a3b8; }
+html[data-theme='dark'] .text-slate-600 { color: #cbd5e1; }
+html[data-theme='dark'] .text-slate-700 { color: #e2e8f0; }
+html[data-theme='dark'] .text-slate-800 { color: #f1f5f9; }
+html[data-theme='dark'] .text-slate-900 { color: #f8fafc; }
+html[data-theme='dark'] .text-slate-950 { color: #f8fafc; }
+
+html[data-theme='dark'] .border-slate-100,
+html[data-theme='dark'] .border-slate-200 { border-color: #334155; }
+html[data-theme='dark'] .border-slate-700 { border-color: #475569; }
+html[data-theme='dark'] .border-slate-800 { border-color: #64748b; }
+html[data-theme='dark'] .divide-slate-200 > * + * { border-color: #334155; }
+
+/* Route info card gradient stays dark-on-dark */
+html[data-theme='dark'] .from-slate-900 {
+  --tw-gradient-from: #020617;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+html[data-theme='dark'] .to-slate-800 { --tw-gradient-to: #0f172a; }
+html[data-theme='dark'] .bg-slate-800\/80 { background-color: rgba(15, 23, 42, 0.9); }
+html[data-theme='dark'] .border-slate-700\/60 { border-color: rgba(71, 85, 105, 0.6); }
+
+/* Lime accents remain lime; badges keep dark text on lime */
+html[data-theme='dark'] .bg-lime-50 { background-color: rgba(101, 163, 13, 0.15); }
+html[data-theme='dark'] .text-lime-600 { color: #bef264; }
+html[data-theme='dark'] .text-lime-400 { color: #bef264; }
+html[data-theme='dark'] .border-lime-100 { border-color: rgba(101, 163, 13, 0.35); }
+html[data-theme='dark'] .border-lime-200 { border-color: rgba(101, 163, 13, 0.5); }
+html[data-theme='dark'] .bg-lime-500\/20 { background-color: rgba(132, 204, 22, 0.2); }
+html[data-theme='dark'] .hover\:bg-lime-50:hover { background-color: rgba(101, 163, 13, 0.15); }
+html[data-theme='dark'] .hover\:text-lime-600:hover { color: #bef264; }
+html[data-theme='dark'] #route-badge { color: #1a2e05; }
+
+/* Login hint / booking banner colors */
+html[data-theme='dark'] .bg-amber-50 { background-color: rgba(120, 53, 15, 0.4); }
+html[data-theme='dark'] .text-amber-800 { color: #fde68a; }
+html[data-theme='dark'] .border-amber-200 { border-color: #92400e; }
+html[data-theme='dark'] .bg-sky-50 { background-color: rgba(2, 132, 199, 0.15); }
+html[data-theme='dark'] .text-sky-800 { color: #7dd3fc; }
+html[data-theme='dark'] .text-sky-700 { color: #7dd3fc; }
+html[data-theme='dark'] .border-sky-200 { border-color: rgba(2, 132, 199, 0.4); }
+
+/* SEATS stay clearly visible: available / selected / booked */
+html[data-theme='dark'] .seats { background-color: #334155; color: #e2e8f0; }
+html[data-theme='dark'] .seats:hover:not(:disabled):not(.bg-lime-500):not(.bg-red-500) { background-color: #475569; }
+html[data-theme='dark'] .seats.bg-lime-500 { background-color: #84cc16; color: #ffffff; }
+html[data-theme='dark'] .seats.bg-red-500 { background-color: #ef4444; color: #ffffff; }
+
+/* Form inputs keep readable borders */
+html[data-theme='dark'] .input { border-color: #475569; }
+html[data-theme='dark'] .input::placeholder { color: #64748b; }
+html[data-theme='dark'] .input:focus { border-color: #84cc16; }
+
+/* Live location panel */
+html[data-theme='dark'] .live-route-btn { background: #1e293b; color: #cbd5e1; border-color: #334155; }
+html[data-theme='dark'] .live-route-btn:hover { background: #0f172a; color: #bef264; border-color: #65a30d; }
+html[data-theme='dark'] .live-route-btn.active { background: #65a30d; color: #ffffff; border-color: #65a30d; }
+html[data-theme='dark'] .live-location-status { background: #0f172a; border-color: #334155; }
+html[data-theme='dark'] .live-map { border-color: #334155; }
+html[data-theme='dark'] #live-location-status { color: #a3e635; }
+html[data-theme='dark'] .live-location-status span { color: #94a3b8; }
+html[data-theme='dark'] .live-location-status strong { color: #f1f5f9; }
+
+/* New sections: about / search / bookings / driver */
+html[data-theme='dark'] .about-feature,
+html[data-theme='dark'] .search-result-card,
+html[data-theme='dark'] .my-booking-row,
+html[data-theme='dark'] .driver-trip-row,
+html[data-theme='dark'] .driver-stat { background: #0f172a; border-color: #334155; }
+
+html[data-theme='dark'] .search-result-card:hover { background: rgba(101, 163, 13, 0.12); border-color: #65a30d; }
+html[data-theme='dark'] .search-result-title { color: #f1f5f9; }
+html[data-theme='dark'] .search-result-route { color: #bef264; }
+html[data-theme='dark'] .search-result-stops,
+html[data-theme='dark'] .search-empty,
+html[data-theme='dark'] .about-feature-text { color: #94a3b8; }
+html[data-theme='dark'] .about-feature-title { color: #f1f5f9; }
+html[data-theme='dark'] .my-booking-row,
+html[data-theme='dark'] .driver-trip-row { color: #cbd5e1; }
+html[data-theme='dark'] .driver-stat strong { color: #f1f5f9; }
+html[data-theme='dark'] .driver-stat span { color: #94a3b8; }
+html[data-theme='dark'] #driver-location-status { color: #e2e8f0; }
+html[data-theme='dark'] .driver-status-off { background: #334155; color: #cbd5e1; }
+
+/* Success screen panel */
+html[data-theme='dark'] #successfull-section { background-color: #020617; }
+
+/* Footer stays dark */
+html[data-theme='dark'] footer.bg-slate-900 { background-color: #020617; }

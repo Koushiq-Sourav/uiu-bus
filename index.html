@@ -1,0 +1,591 @@
+<!--index.html — PARTITIONED 2026-09-15-->
+<!DOCTYPE html>
+
+<html data-theme="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UIU-BUS-SERVICE</title>
+<link href="assets/images/uiu-bus.png" rel="icon" type="image/png"/>
+<link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="assets/css/style.css" rel="stylesheet"/>
+<!-- Apply saved theme before first paint (no flash) -->
+<script>(function(){try{var t=localStorage.getItem('uiu_bus_theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<!-- Leaflet + OpenFreeMap (free map, no API key) -->
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<link href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" rel="stylesheet"/>
+</head>
+<body class="font-inter bg-slate-50 text-slate-800">
+<!-- =====================================================
+       PARTITION: PUBLIC SITE — NO ENTRY GATE.
+       Browsing (Home/About/Search/routes/seats) is open to
+       everyone; the auth portal opens only at "Book Now".
+       ===================================================== -->
+<!-- =====================================================
+       PARTITION: NAVIGATION + AUTH (AUTH PORTAL ENTRY)
+       -----------------------------------------------------
+       js: assets/js/auth.js (initAuth) + assets/js/app.js
+       (initNavigation: data-nav Home/About/Search)
+       ===================================================== -->
+<section id="first-one">
+<header class="container mx-auto px-4 lg:px-12 py-2">
+<nav class="font-raleway">
+<div class="navbar bg-base-100 rounded-xl px-2 md:px-4">
+<div class="navbar-start">
+<div class="dropdown">
+<div aria-label="Toggle Menu" class="btn btn-ghost lg:hidden pl-0 mr-2" role="button" tabindex="0">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 6h16M4 12h8m-8 6h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<ul class="menu menu-sm dropdown-content mt-3 z-[10] p-2 shadow bg-base-100 rounded-box w-52 font-medium" tabindex="0">
+<li><a data-nav="home" href="#">Home</a></li>
+<li><a data-nav="about" href="#">About</a></li>
+<li>
+<details>
+<summary>Destination</summary>
+<ul class="p-2 bg-base-100 rounded-box">
+<li><a class="route-select-btn" data-route="Dhanmondi">ROUTE: 01 Dhanmondi</a></li>
+<li><a class="route-select-btn" data-route="Mirpur">ROUTE 02 Mirpur</a></li>
+<li><a class="route-select-btn" data-route="Signboard">ROUTE 03 Signboard</a></li>
+<li><a class="route-select-btn" data-route="Jatrabari">ROUTE: 04 Jatrabari</a></li>
+<li><a class="route-select-btn" data-route="Palashi">ROUTE: 05 Palashi</a></li>
+<li><a class="route-select-btn" data-route="Uttara">ROUTE: 06 Uttara</a></li>
+</ul>
+</details>
+</li>
+</ul>
+</div>
+<a class="btn btn-ghost text-xl md:text-2xl font-extrabold tracking-tight px-0" data-nav="home" href="#">UIU-BUS</a>
+<span class="ml-2 bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full font-bold hidden md:inline" id="auth-badge">Guest</span>
+</div>
+<div class="navbar-center hidden lg:flex">
+<ul class="menu menu-horizontal px-1 font-medium text-base gap-2 z-[10]">
+<li><a class="hover:text-lime-600 transition-colors" data-nav="home" href="#">Home</a></li>
+<li><a class="hover:text-lime-600 transition-colors" data-nav="about" href="#">About</a></li>
+<li class="relative group">
+<a class="hover:text-lime-600 transition-colors flex items-center gap-1 cursor-pointer">
+                  Destination
+                  <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</a>
+<ul class="absolute top-full left-0 hidden group-hover:flex flex-col bg-white shadow-xl rounded-xl p-2 w-56 border border-slate-100 text-sm font-medium z-50 animate-fade-in space-y-1">
+<li><a class="route-select-btn hover:bg-lime-50 hover:text-lime-600 rounded-lg p-2.5 transition-colors block cursor-pointer" data-route="Dhanmondi">ROUTE: 01 Dhanmondi</a></li>
+<li><a class="route-select-btn hover:bg-lime-50 hover:text-lime-600 rounded-lg p-2.5 transition-colors block cursor-pointer" data-route="Mirpur">ROUTE: 02 Mirpur</a></li>
+<li><a class="route-select-btn hover:bg-lime-50 hover:text-lime-600 rounded-lg p-2.5 transition-colors block cursor-pointer" data-route="Signboard">ROUTE: 03 Signboard</a></li>
+<li><a class="route-select-btn hover:bg-lime-50 hover:text-lime-600 rounded-lg p-2.5 transition-colors block cursor-pointer" data-route="Jatrabari">ROUTE: 04 Jatrabari</a></li>
+<li><a class="route-select-btn hover:bg-lime-50 hover:text-lime-600 rounded-lg p-2.5 transition-colors block cursor-pointer" data-route="Palashi">ROUTE: 05 Palashi</a></li>
+<li><a class="route-select-btn hover:bg-lime-50 hover:text-lime-600 rounded-lg p-2.5 transition-colors block cursor-pointer" data-route="Uttara">ROUTE: 06 Uttara</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="navbar-end gap-2">
+<!-- PARTITION: AUTH — who is logged in -->
+<span class="hidden md:inline text-sm font-semibold text-slate-700" id="user-display"></span>
+<button class="btn btn-sm bg-slate-900 hover:bg-slate-800 text-white border-none font-bold" id="login-btn" type="button">Login</button>
+<button class="btn btn-sm bg-slate-200 hover:bg-slate-300 text-slate-700 border-none font-bold hidden" id="logout-btn" type="button">Logout</button>
+<!-- PARTITION: DARK MODE toggle (persisted in localStorage) -->
+<button aria-label="Switch to dark mode" class="btn btn-sm btn-circle btn-ghost" id="theme-toggle" title="Dark mode" type="button">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+<a class="btn text-lime-600 bg-lime-100/80 border-lime-200 hover:bg-lime-200 gap-2" href="#purchase-section">
+<span class="font-bold">Bus</span>
+<img alt="Bus Icon" class="w-5 h-5 object-contain" src="assets/images/bus-icon.png"/>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main class="container mx-auto px-4 lg:px-12 space-y-16 md:space-y-24">
+<!-- =====================================================
+           PARTITION: HERO / LANDING
+           -----------------------------------------------------
+           Pure presentation — no JS logic
+           ===================================================== -->
+<section class="banner-hero flex justify-center items-center min-h-[420px] md:min-h-[550px] bg-no-repeat bg-cover bg-center rounded-3xl mt-4 p-6 text-center">
+<div class="max-w-[700px] space-y-6 md:space-y-8">
+<h1 class="text-3xl sm:text-5xl lg:text-6xl font-raleway font-black leading-tight text-white drop-shadow-md">
+<span class="text-lime-400">UIU BUS SERVICE</span>
+</h1>
+<p class="text-white text-sm sm:text-base max-w-xl mx-auto leading-relaxed opacity-95">
+            Welcome to UIU Bus Service. Ensuring safe, timely, and reliable transportation across all campus routes for students and faculty.
+          </p>
+</div>
+</section>
+<!-- =====================================================
+           PARTITION: ABOUT (PROJECT INFO)
+           -----------------------------------------------------
+           Reached via the navbar "About" link (data-nav="about").
+           Pure presentation — no JS logic.
+           ===================================================== -->
+<section class="font-raleway scroll-mt-24" id="about-section">
+<div class="about-card bg-white shadow-xl rounded-3xl p-6 md:p-10 border border-slate-100">
+<span class="text-lime-600 font-bold text-xs tracking-widest">ABOUT</span>
+<h2 class="text-2xl md:text-3xl font-bold text-slate-900 mt-1">About UIU Bus Service</h2>
+<p class="mt-4 text-slate-600 leading-relaxed font-inter max-w-3xl">
+            UIU-BUS is the official shuttle booking platform of United International University.
+            Browse routes and live availability freely — a Student ID is only needed when you
+            reserve your seat. Drivers sign in through a separate portal and share their live
+            location so every trip stays safe and on schedule.
+          </p>
+<div class="grid sm:grid-cols-3 gap-4 mt-8 font-inter">
+<div class="about-feature">
+<p class="about-feature-title">💺 Seat Booking</p>
+<p class="about-feature-text">Pick any available seat across 6 campus routes. One Student ID = one seat per trip, enforced on the server.</p>
+</div>
+<div class="about-feature">
+<p class="about-feature-title">🗺️ Live Location</p>
+<p class="about-feature-text">Watch shuttle routes on the live map, get directions, and receive bus-near alerts on Telegram.</p>
+</div>
+<div class="about-feature">
+<p class="about-feature-title">🔐 Secure Accounts</p>
+<p class="about-feature-text">Separate Student and Driver logins with hashed passwords; drivers verify GPS before entering the dashboard.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- =====================================================
+           PARTITION: ROUTES (DESTINATION INFO)
+           -----------------------------------------------------
+           html: route-info-display | js: assets/js/routes.js
+           Data: busRoutes + showRouteInfoCard()
+           ===================================================== -->
+<section class="hidden font-raleway animate-fade-in scroll-mt-24" id="route-info-display">
+<div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-6 md:p-10 text-white shadow-2xl border border-slate-700">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-700 pb-6">
+<div>
+<span class="bg-lime-500 text-slate-950 font-extrabold text-xs px-3 py-1 rounded-full uppercase tracking-wider" id="route-badge">UIU Shuttle Line</span>
+<h2 class="text-2xl md:text-4xl font-bold mt-2" id="route-title">Route Details</h2>
+</div>
+<button class="btn btn-sm btn-circle btn-ghost text-slate-400 hover:text-white" id="close-route-info">✕</button>
+</div>
+<div class="mt-6">
+<h4 class="text-lg font-semibold text-lime-400 mb-3 flex items-center gap-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+              Stoppages / Boarding Points:
+            </h4>
+<ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-inter text-slate-300" id="route-stops-list"></ul>
+</div>
+</div>
+</section>
+<!-- =====================================================
+            PARTITION: SHUTTLE INFO CARD (SUMMARY)
+            -----------------------------------------------------
+            Shows selected route, seats-left, departure + arrival
+            times. Updated by:
+            routes.js (updateShuttleInfoSection) + api.js (live DB times)
+            ===================================================== -->
+<section class="font-raleway">
+<h2 class="text-2xl md:text-3xl font-bold text-center text-slate-900">UIU SHUTTLE SERVICE</h2>
+<p class="mt-2 text-center text-sm md:text-base max-w-md mx-auto text-slate-500">
+          Integrated bus booking system providing real-time availability and comfortable campus commutes.
+        </p>
+<div class="mt-8 md:mt-12 flex flex-col justify-between items-center bg-white shadow-xl rounded-3xl p-6 md:p-10 gap-8 border border-slate-100">
+<div class="w-full space-y-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<img alt="Bus Logo" class="w-12 h-12 object-contain" src="assets/images/bus-logo.png"/>
+<div>
+<h3 class="text-xl md:text-2xl font-bold text-slate-900">UIU SHUTTLE SERVICE</h3>
+<p class="text-xs md:text-sm text-slate-400 font-inter">Coach-009-WEB ! AC_Business</p>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-lime-50 p-3 rounded-xl text-lime-600 font-semibold self-start sm:self-auto border border-lime-100 font-inter">
+<img alt="Seat Icon" src="assets/images/seat-green-filled.png"/>
+<p><span id="seats-left">40</span> seats left</p>
+</div>
+</div>
+<div class="bg-slate-50 rounded-2xl p-4 md:p-6 space-y-4 text-sm md:text-base font-inter">
+<div class="flex justify-between border-b border-slate-200 pb-3">
+<span class="text-slate-500">Route</span>
+<span class="font-semibold text-slate-800" id="display-route-name">Dhaka-City</span>
+</div>
+<div class="flex justify-between border-b border-slate-200 pb-3">
+<span class="text-slate-500">Departure Time</span>
+<span class="font-semibold text-slate-800" id="display-departure-time">--</span>
+</div>
+<div class="flex justify-between border-b border-slate-200 pb-3">
+<span class="text-slate-500">Arrival Time</span>
+<span class="font-semibold text-slate-800" id="display-arrival-time">--</span>
+</div>
+<div class="flex flex-wrap gap-2 pt-1" id="display-boarding-points">
+<div class="bg-slate-200 text-xs md:text-sm p-2.5 rounded-lg font-medium text-slate-700">Boarding Point - Dhanmondi</div>
+<div class="bg-slate-200 text-xs md:text-sm p-2.5 rounded-lg font-medium text-slate-700">Boarding Point - Campus</div>
+<div class="bg-slate-200 text-xs md:text-sm p-2.5 rounded-lg font-medium text-slate-700">Boarding Point - Notun Bazar</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- =====================================================
+           PARTITION: SEAT CHOOSING + BOOKING (CORE)
+           -----------------------------------------------------
+           Left:  seats.js — 40-seat grid (A1-J4), max 1 seat
+                    (one student ID = one seat, per-student not global)
+           Right: booking.js — summary + form + Next() → POST
+                    api/create_booking.php (no money)
+           Auth gate: browsing is public; auth portal opens only at
+                    "Book Now" (auth.js) and the seat survives it
+           ===================================================== -->
+<section class="bg-white shadow-xl rounded-3xl p-6 md:p-10 border border-slate-100" id="purchase-section">
+<!-- Already-booked banner (protected student area, app.js) -->
+<div class="hidden mb-6 bg-sky-50 border border-sky-200 rounded-2xl p-4 text-sm text-sky-800 font-inter" id="my-booking-banner">
+<span id="my-booking-text"></span>
+</div>
+<div class="flex flex-col lg:flex-row gap-10">
+<!-- SEAT GRID -->
+<div class="flex-1">
+<h1 class="font-bold text-2xl md:text-3xl text-slate-900 border-b border-slate-200 pb-4">Select Your Seat</h1>
+<div class="flex justify-between my-4 text-sm md:text-base font-medium font-inter">
+<div class="flex items-center gap-2">
+<img alt="Available Seat" src="assets/images/seat-gray.png"/>
+<p class="text-slate-500">Available</p>
+</div>
+<div class="flex items-center gap-2">
+<img alt="Selected Seat" src="assets/images/seat-green-filled.png"/>
+<p class="text-lime-600 font-semibold">Selected</p>
+</div>
+</div>
+<div class="flex justify-end my-4">
+<div class="bg-slate-100 p-3 rounded-xl w-16 flex justify-center border border-slate-200">
+<img alt="Steering Wheel" class="w-6 h-6" src="assets/images/tabler-icon-steering-wheel.svg"/>
+</div>
+</div>
+<div class="space-y-3 font-inter">
+<script>
+              const rowLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+              document.write(rowLetters.map(letter => `
+                <div class="grid grid-cols-5 gap-2 sm:gap-4 items-center text-center font-semibold text-slate-500">
+                  <span class="text-left font-bold text-slate-700">${letter}</span>
+                  <button id="${letter}1" class="seats py-3 bg-slate-100 rounded-xl hover:bg-slate-200 transition font-medium text-slate-700">${letter}1</button>
+                  <button id="${letter}2" class="seats py-3 bg-slate-100 rounded-xl hover:bg-slate-200 transition font-medium text-slate-700 mr-1 sm:mr-4">${letter}2</button>
+                  <button id="${letter}3" class="seats py-3 bg-slate-100 rounded-xl hover:bg-slate-200 transition font-medium text-slate-700">${letter}3</button>
+                  <button id="${letter}4" class="seats py-3 bg-slate-100 rounded-xl hover:bg-slate-200 transition font-medium text-slate-700">${letter}4</button>
+                </div>
+              `).join(''));
+            </script>
+</div>
+</div>
+<!-- BOOKING SUMMARY + ACTION (simplified: seat + Book Now only) -->
+<div class="w-full lg:w-[420px] lg:border-l border-slate-200 lg:pl-8 pt-6 lg:pt-0 border-t lg:border-t-0 font-inter">
+<h1 class="font-bold text-2xl md:text-3xl text-slate-900 border-b border-slate-200 pb-4 font-raleway">Booking Details</h1>
+<div class="bg-slate-50 p-6 rounded-2xl mt-3 border border-slate-200">
+<div class="flex justify-between items-center font-semibold text-sm text-slate-700 border-b border-slate-200 pb-3">
+<span>Seat <span class="bg-lime-500 text-white text-xs px-2 py-0.5 rounded-full font-bold" id="selected-seat">0</span></span>
+<span class="text-xs font-medium text-slate-400">One ID = one seat</span>
+</div>
+<ul class="divide-y divide-slate-200 text-sm" id="booking-seat-container"></ul>
+</div>
+<div class="mt-6">
+<button class="btn bg-lime-500 hover:bg-lime-600 text-white border-none w-full text-lg mt-2 font-bold shadow-md opacity-50 cursor-not-allowed" disabled="" id="next-btn" onclick="Next()">Book Now</button>
+<p class="text-xs text-slate-500 text-center hidden" id="booking-reference-wrap">Ref: <span class="font-bold text-slate-700" id="booking-reference-inline"></span></p>
+</div>
+</div>
+</div>
+</section>
+<!-- =====================================================
+           PARTITION: MY BOOKINGS (PROTECTED STUDENT AREA)
+           -----------------------------------------------------
+           js: assets/js/app.js (renderMyBookings)
+           Lists the logged-in student's bookings; hidden for
+           guests and drivers.
+           ===================================================== -->
+<section class="hidden font-raleway" id="my-bookings-section">
+<div class="bg-white shadow-xl rounded-3xl p-6 md:p-10 border border-slate-100">
+<span class="text-lime-600 font-bold text-xs tracking-widest">MY BOOKINGS</span>
+<h2 class="text-2xl md:text-3xl font-bold text-slate-900 mt-1">My Bookings</h2>
+<ul class="mt-6 space-y-3 font-inter" id="my-bookings-list"></ul>
+</div>
+</section>
+<!-- =====================================================
+           PARTITION: CAROUSEL (PRESENTATION ONLY)
+           ===================================================== -->
+<div class="carousel w-full mt-12 mb-12 rounded-3xl overflow-hidden shadow-lg">
+<div class="carousel-item relative w-full" id="slide1">
+<img alt="Bus slide 1" class="w-full h-64 md:h-96 object-cover" src="assets/images/pic-1.jpg"/>
+<div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+<a class="btn btn-circle bg-white/70 hover:bg-white border-0 shadow-md" href="#slide4">❮</a>
+<a class="btn btn-circle bg-white/70 hover:bg-white border-0 shadow-md" href="#slide2">❯</a>
+</div>
+</div>
+<div class="carousel-item relative w-full" id="slide2">
+<img alt="Bus slide 2" class="w-full h-64 md:h-96 object-cover" src="assets/images/pic-2.jpg"/>
+<div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+<a class="btn btn-circle bg-white/70 hover:bg-white border-0 shadow-md" href="#slide1">❮</a>
+<a class="btn btn-circle bg-white/70 hover:bg-white border-0 shadow-md" href="#slide3">❯</a>
+</div>
+</div>
+<div class="carousel-item relative w-full" id="slide3">
+<img alt="Bus slide 3" class="w-full h-64 md:h-96 object-cover" src="assets/images/pic-3.jpg"/>
+<div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+<a class="btn btn-circle bg-white/70 hover:bg-white border-0 shadow-md" href="#slide2">❮</a>
+<a class="btn btn-circle bg-white/70 hover:bg-white border-0 shadow-md" href="#slide4">❯</a>
+</div>
+</div>
+<div class="carousel-item relative w-full" id="slide4">
+<img alt="Bus slide 4" class="w-full h-64 md:h-96 object-cover" src="assets/images/pic-4.jpg"/>
+<div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+<a class="btn btn-circle bg-white/70 hover:bg-white border-0 shadow-md" href="#slide3">❮</a>
+<a class="btn btn-circle bg-white/70 hover:bg-white border-0 shadow-md" href="#slide1">❯</a>
+</div>
+</div>
+</div>
+</main>
+<!-- =====================================================
+         PARTITION: LIVE LOCATION / MAP
+         -----------------------------------------------------
+         js: assets/js/map.js  |  Leaflet OSM
+         ===================================================== -->
+<section class="font-raleway container mx-auto px-4 lg:px-12" id="live-location-section">
+<div class="bg-white shadow-xl rounded-3xl p-6 md:p-10 border border-slate-100">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-5 mb-6">
+<div>
+<span class="text-lime-600 font-bold text-xs tracking-widest">LIVE LOCATION</span>
+<h2 class="text-2xl md:text-3xl font-bold text-slate-900 mt-1">UIU Shuttle Live Location</h2>
+<p class="text-sm text-slate-500 mt-2 font-inter">View your current location and selected shuttle route.</p>
+</div>
+<button class="btn bg-lime-500 hover:bg-lime-600 text-white border-none font-bold" id="my-location-btn" type="button">My Location</button>
+</div>
+<div class="live-route-selector">
+<button class="live-route-btn active" data-live-route="Dhanmondi" type="button">ROUTE: 01 Dhanmondi</button>
+<button class="live-route-btn" data-live-route="Mirpur" type="button">ROUTE: 02 Mirpur</button>
+<button class="live-route-btn" data-live-route="Signboard" type="button">ROUTE: 03 Signboard</button>
+<button class="live-route-btn" data-live-route="Jatrabari" type="button">ROUTE: 04 Jatrabari</button>
+<button class="live-route-btn" data-live-route="Palashi" type="button">ROUTE: 05 Palashi</button>
+<button class="live-route-btn" data-live-route="Uttara" type="button">ROUTE: 06 Uttara</button>
+</div>
+<div class="live-location-status">
+<div><span>Selected Route</span><strong id="live-route-name">ROUTE: 01 Dhanmondi</strong></div>
+<div><span>Location Status</span><strong id="live-location-status">Waiting for location...</strong></div>
+</div>
+<div class="live-map" id="live-map"></div>
+<!-- PARTITION: TELEGRAM — demo bus simulation -->
+<p class="text-sm text-slate-500 mt-3 font-inter" id="bus-sim-status">Demo: press “Simulate Bus” to move a 🚌 along this route.</p>
+<div class="live-map-actions">
+<button class="btn bg-sky-600 hover:bg-sky-700 text-white border-none font-bold" id="sim-bus-btn" type="button">Simulate Bus</button>
+<button class="btn bg-slate-900 hover:bg-slate-800 text-white border-none font-bold" id="get-directions-btn" type="button">Get Directions</button>
+<button class="btn bg-slate-200 hover:bg-slate-300 text-slate-700 border-none font-bold" id="stop-location-btn" type="button">Stop Live Location</button>
+</div>
+</div>
+</section>
+</section><div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" id="auth-modal">
+<div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl border border-slate-100 relative animate-fade-in max-h-[92vh] overflow-y-auto">
+<button aria-label="Close" class="absolute top-4 right-4 btn btn-sm btn-circle btn-ghost" id="auth-close" type="button">✕</button>
+<!-- Options -->
+<div id="auth-view-options">
+<h2 class="text-2xl font-bold text-slate-900 font-raleway">Welcome to UIU-BUS</h2>
+<p class="text-sm text-slate-500 mt-1 font-inter">Choose how you want to continue.</p>
+<div class="space-y-3 mt-6 font-inter">
+<button class="btn bg-slate-900 hover:bg-slate-800 text-white border-none w-full font-bold" id="auth-goto-login" type="button">Student Login</button>
+<button class="btn bg-lime-500 hover:bg-lime-600 text-white border-none w-full font-bold" id="auth-goto-signup" type="button">New Sign Up</button>
+<button class="btn bg-sky-600 hover:bg-sky-700 text-white border-none w-full font-bold" id="auth-goto-driver" type="button">Driver Login</button>
+</div>
+</div>
+<!-- Student Login -->
+<div class="hidden" id="auth-view-login">
+<h2 class="text-2xl font-bold text-slate-900 font-raleway">Student Login</h2>
+<p class="text-sm text-slate-500 mt-1 font-inter">Use your Student ID to continue booking.</p>
+<form class="space-y-4 mt-6 font-inter" id="portal-login-form">
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1">Email / Student ID*</label>
+<input autocomplete="username" class="input input-bordered w-full text-sm bg-white" id="portal-login-id" placeholder="e.g., 011221001" required="" type="text"/>
+</div>
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1">Password*</label>
+<input autocomplete="current-password" class="input input-bordered w-full text-sm bg-white" id="portal-login-password" placeholder="Enter your password" required="" type="password"/>
+</div>
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1">Telegram Chat ID (optional)</label>
+<input class="input input-bordered w-full text-sm bg-white" id="portal-login-tg" placeholder="One-time link for bus-near alerts" type="text"/>
+</div>
+<p class="text-sm text-red-600 min-h-[1.2rem]" id="portal-login-error"></p>
+<p class="text-sm text-emerald-600 min-h-[1.2rem]" id="portal-login-success"></p>
+<button class="btn bg-slate-900 hover:bg-slate-800 text-white border-none w-full font-bold" id="portal-login-submit" type="submit">Login</button>
+</form>
+<p class="text-sm text-slate-500 mt-4 text-center font-inter">New here? <a class="font-bold text-lime-600 hover:underline" href="#" id="auth-login-to-signup">Sign Up</a></p>
+<p class="text-sm text-slate-500 mt-2 text-center font-inter"><a class="hover:underline" href="#" id="auth-login-back">← Back to options</a></p>
+</div>
+<!-- New Sign Up -->
+<div class="hidden" id="auth-view-signup">
+<h2 class="text-2xl font-bold text-slate-900 font-raleway">New Sign Up</h2>
+<p class="text-sm text-slate-500 mt-1 font-inter">Create your student account, then log in to book.</p>
+<form class="space-y-4 mt-6 font-inter" id="portal-signup-form">
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1">Email / Student ID*</label>
+<input autocomplete="username" class="input input-bordered w-full text-sm bg-white" id="portal-signup-id" placeholder="e.g., 011221001" required="" type="text"/>
+</div>
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1">Password*</label>
+<input autocomplete="new-password" class="input input-bordered w-full text-sm bg-white" id="portal-signup-password" placeholder="Min 4 characters" required="" type="password"/>
+</div>
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1">Re-enter Password*</label>
+<input autocomplete="new-password" class="input input-bordered w-full text-sm bg-white" id="portal-signup-password2" placeholder="Repeat your password" required="" type="password"/>
+</div>
+<p class="text-sm text-red-600 min-h-[1.2rem]" id="portal-signup-error"></p>
+<p class="text-sm text-emerald-600 min-h-[1.2rem]" id="portal-signup-success"></p>
+<button class="btn bg-lime-500 hover:bg-lime-600 text-white border-none w-full font-bold" id="portal-signup-submit" type="submit">Sign Up</button>
+</form>
+<p class="text-sm text-slate-500 mt-4 text-center font-inter">Already have an account? <a class="font-bold text-lime-600 hover:underline" href="#" id="auth-signup-to-login">Login</a></p>
+<p class="text-sm text-slate-500 mt-2 text-center font-inter"><a class="hover:underline" href="#" id="auth-signup-back">← Back to options</a></p>
+</div>
+<!-- Driver Login -->
+<div class="hidden" id="auth-view-driver">
+<h2 class="text-2xl font-bold text-slate-900 font-raleway">Driver Login</h2>
+<p class="text-sm text-slate-500 mt-1 font-inter">Drivers only — location permission is mandatory next.</p>
+<form class="space-y-4 mt-6 font-inter" id="portal-driver-form">
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1">Driver ID*</label>
+<input autocomplete="username" class="input input-bordered w-full text-sm bg-white" id="portal-driver-id" placeholder="e.g., driver01" required="" type="text"/>
+</div>
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1">Password*</label>
+<input autocomplete="current-password" class="input input-bordered w-full text-sm bg-white" id="portal-driver-password" placeholder="Enter your password" required="" type="password"/>
+</div>
+<p class="text-sm text-red-600 min-h-[1.2rem]" id="portal-driver-error"></p>
+<button class="btn bg-sky-600 hover:bg-sky-700 text-white border-none w-full font-bold" id="portal-driver-submit" type="submit">Driver Login</button>
+</form>
+<p class="text-sm text-slate-500 mt-4 text-center font-inter"><a class="hover:underline" href="#" id="auth-driver-back">← Back to options</a></p>
+</div>
+<!-- Driver location check -->
+<div class="hidden" id="auth-view-driver-location">
+<h2 class="text-2xl font-bold text-slate-900 font-raleway">Location Permission</h2>
+<p class="text-sm text-slate-500 mt-1 font-inter">Your live GPS is required for driver login.</p>
+<div class="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-4 font-inter">
+<p class="text-sm text-slate-700" id="driver-location-status">Checking location permission…</p>
+</div>
+<button class="btn bg-sky-600 hover:bg-sky-700 text-white border-none w-full font-bold mt-4 font-inter" id="driver-retry-location" type="button">Retry Location</button>
+</div>
+</div>
+</div>
+<footer class="bg-slate-900 text-slate-300 mt-24 py-12 px-4 md:px-12 font-inter">
+<div class="container mx-auto">
+<div class="flex flex-col md:flex-row justify-between gap-8 pb-12 border-b border-slate-800">
+<div class="space-y-3 max-w-sm">
+<h1 class="font-bold text-2xl text-white font-raleway">UIU-BUS</h1>
+<p class="text-sm text-slate-400 leading-relaxed">UIU-BUS is a digital platform designed to make daily student commuting seamless and convenient.</p>
+</div>
+<div class="space-y-3">
+<p class="text-lg font-semibold text-white">Download our app</p>
+<img alt="Play Store Download" class="w-36 hover:opacity-90 transition-opacity cursor-pointer" src="assets/images/playstore.png"/>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-center gap-4 mt-8 text-xs md:text-sm text-slate-400">
+<p>© all rights reserved, UIU-BUS services limited 2026</p>
+<div class="flex flex-wrap gap-4 md:gap-6">
+<a class="hover:underline hover:text-white transition-colors" href="#">Terms &amp; condition</a>
+<a class="hover:underline hover:text-white transition-colors" href="#">Return &amp; refund policy</a>
+<a class="hover:underline hover:text-white transition-colors" href="#">Privacy policy</a>
+</div>
+</div>
+</div>
+</footer>
+
+<!-- =====================================================
+     PARTITION: DRIVER DASHBOARD (PROTECTED — DRIVER ONLY)
+     -----------------------------------------------------
+     js: assets/js/auth.js (showDriverDashboard /
+         fetchDriverDashboard / toggleDriverLocationSharing)
+     Visible only after Driver Login + a verified live GPS fix.
+     Students can never reach it (role guard + no nav path).
+     ===================================================== -->
+<section class="hidden container mx-auto px-4 lg:px-12 pt-8 pb-4 font-raleway" id="driver-dashboard">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div>
+<span class="text-lime-600 font-bold text-xs tracking-widest">DRIVER PORTAL</span>
+<h1 class="text-2xl md:text-3xl font-bold text-slate-900 mt-1">Driver Dashboard</h1>
+</div>
+<span class="bg-sky-600 text-white text-xs px-3 py-1.5 rounded-full font-bold" id="driver-badge">DRIVER</span>
+</div>
+<div class="mt-4 font-inter">
+<button class="btn btn-sm bg-slate-200 hover:bg-slate-300 text-slate-700 border-none font-bold" id="driver-back-website-btn" type="button">← Back to Website</button>
+</div>
+<div class="grid lg:grid-cols-3 gap-6 mt-6">
+<div class="bg-white shadow-xl rounded-3xl p-6 border border-slate-100">
+<h2 class="text-lg font-bold text-slate-900">Driver Profile</h2>
+<p class="text-xl font-extrabold text-slate-900 mt-3" id="driver-name">—</p>
+<p class="text-sm text-slate-500 mt-1 font-inter" id="driver-id">Driver ID: —</p>
+<p class="text-xs text-slate-400 mt-4 font-inter">Signed in with a verified GPS fix. Students cannot access this area.</p>
+</div>
+<div class="bg-white shadow-xl rounded-3xl p-6 border border-slate-100 lg:col-span-2">
+<div class="flex items-center justify-between gap-3">
+<h2 class="text-lg font-bold text-slate-900">Live Location</h2>
+<span class="driver-status-off" id="driver-sharing-status">Location sharing off</span>
+</div>
+<div class="grid grid-cols-3 gap-3 mt-4 font-inter text-center">
+<div class="driver-stat"><span>Latitude</span><strong id="driver-lat">--</strong></div>
+<div class="driver-stat"><span>Longitude</span><strong id="driver-lng">--</strong></div>
+<div class="driver-stat"><span>Last Update</span><strong id="driver-location-updated">Not sharing yet</strong></div>
+</div>
+<div class="flex flex-col sm:flex-row gap-3 mt-5 font-inter">
+<button class="btn bg-lime-500 hover:bg-lime-600 text-white border-none font-bold flex-1" id="driver-share-location-btn" type="button">Start Sharing Location</button>
+<button class="btn bg-slate-200 hover:bg-slate-300 text-slate-700 border-none font-bold flex-1" id="driver-stop-location-btn" type="button">Stop Sharing</button>
+</div>
+</div>
+</div>
+<div class="bg-white shadow-xl rounded-3xl p-6 mt-6 border border-slate-100">
+<h2 class="text-lg font-bold text-slate-900">Today's Trips</h2>
+<ul class="mt-4 space-y-3 font-inter" id="driver-trips-list"></ul>
+</div>
+<!-- =====================================================
+       PARTITION: AUTH PORTAL (OVERLAY)
+       -----------------------------------------------------
+       js: assets/js/auth.js
+       Public website opens first; this portal appears ONLY when
+       the user clicks "Book Now" (or Login / Driver Login).
+       Views: options → student-login / signup / driver-login
+              → driver location check → driver dashboard.
+       ===================================================== -->
+
+<!-- =====================================================
+       PARTITION: SUCCESS SCREEN
+       -----------------------------------------------------
+       Shown after booking.js: Next() succeeds
+       ===================================================== -->
+<section class="flex items-center justify-center min-h-screen p-4 hidden bg-slate-100 font-inter" id="successfull-section">
+<div class="bg-white shadow-2xl rounded-3xl p-8 md:p-12 max-w-lg w-full text-center space-y-6 border border-slate-100">
+<div class="flex justify-center"><img alt="Success Icon" class="w-20 h-20 object-contain" src="assets/images/success.png"/></div>
+<p class="font-bold text-2xl md:text-3xl text-emerald-500">SUCCESS</p>
+<p class="font-medium text-slate-600 text-sm md:text-base leading-relaxed">
+        Thank you for Booking Our Bus Seats.<br/>We are working hard to find the best service and deals for you.<br/>Shortly you will find a confirmation in your email.
+      </p>
+<p class="text-sm text-slate-500">Booking Ref: <span class="font-bold text-slate-800" id="booking-reference-success"></span></p>
+<p class="text-sm text-sky-700" id="success-telegram-note">🚌 Bus-near Telegram alerts go to the Chat ID linked at login.</p>
+<button class="btn bg-emerald-500 hover:bg-emerald-600 text-white w-full rounded-full border-none font-bold text-base shadow-md" onclick="location.reload()">Continue</button>
+</div>
+</section>
+<!-- =====================================================
+       PARTITION: SCRIPTS — LOAD ORDER MATTERS
+       -----------------------------------------------------
+       1 config.js   → global state
+       2 utils.js    → helpers
+       3 api.js      → DB fetches + driver GPS feed
+       4 auth.js     → AUTH PORTAL (student/driver, roles, theme)
+       5 routes.js   → ROUTES
+       6 seats.js    → SEAT CHOOSING
+       7 booking.js  → BOOKING
+       8 map.js      → LIVE LOCATION
+       9 telegram.js → TELEGRAM ALERTS (bus-near demo + link)
+       10 app.js     → ENTRY (+ navigation, search, my bookings)
+       ===================================================== -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/routes.js"></script>
+<script src="assets/js/seats.js"></script>
+<script src="assets/js/booking.js"></script>
+<script src="assets/js/map.js"></script>
+<script src="assets/js/telegram.js"></script>
+<script src="assets/js/app.js"></script>
+</section></body>
+</html>

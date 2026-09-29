@@ -1,0 +1,11 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local env / uploads (never commit real credentials or user data)
+.env
+*.log
+data/uploads/*
+!data/uploads/.gitkeep

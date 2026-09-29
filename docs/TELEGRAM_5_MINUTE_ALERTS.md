@@ -1,0 +1,27 @@
+# Telegram 5-Minute Bus Alerts
+
+## What it does
+- Driver posts live bus GPS to `api/bus_location.php`.
+- A logged-in student who grants location permission sends a fresh GPS position to `api/user_location.php`.
+- `api/notify_nearby.php?all=1` checks today's trips every minute.
+- When estimated travel time is about 5 minutes or less, the student receives one Telegram message for that trip.
+- The alert still works if the student's browser is later closed because the server/cron performs the Telegram send.
+
+## Important setup
+1. Create a Telegram bot with BotFather and copy the bot token.
+2. Put the token in `api/telegram_config.php` as `UIU_TELEGRAM_BOT_TOKEN`.
+3. The student must start the bot and provide/link their Telegram Chat ID once.
+4. The student should allow browser location access and press **My Location** so the site starts watching their location.
+5. Keep the driver's GPS feed updating `bus_location.php`.
+6. Schedule `notify_nearby.php?all=1` every minute using Windows Task Scheduler, cron, or a server scheduler.
+
+## ETA calculation
+`ETA = (GPS distance × 1.25 road factor) ÷ 24 km/h`
+
+These are configurable estimates, not guaranteed arrival times. Change `UIU_AVG_BUS_SPEED_KMH`, `UIU_ROAD_DISTANCE_FACTOR`, and `UIU_ALERT_ETA_MINUTES` in `api/telegram_config.php` for your deployment.
+
+## Test without sending
+Open:
+`api/notify_nearby.php?trip_id=1&dry=1`
+
+The response shows which students would be notified, their estimated ETA, and the distance.

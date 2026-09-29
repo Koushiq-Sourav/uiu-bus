@@ -1,0 +1,2 @@
+DEPRECATED 2026-09-15: This folder is legacy duplicate — cleaned. Canonical images are in assets/images/ (verified 2,774,868 bytes identical). This folder now empty except this marker. Safe to delete entire folder. See docs/PARTITIONS.md
+Cleaned: 2026-09-15 — duplicate 20 files removed.
