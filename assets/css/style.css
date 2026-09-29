@@ -617,3 +617,33 @@ html[data-theme='dark'] #successfull-section { background-color: #020617; }
 
 /* Footer stays dark */
 html[data-theme='dark'] footer.bg-slate-900 { background-color: #020617; }
+
+/* =========================================================
+   17. SCROLL REVEAL  [PARTITION: MOTION]
+   ---------------------------------------------------------
+   Fade-up on scroll (up + down) via .reveal -> .visible,
+   driven by initScrollReveal() in app.js (IntersectionObserver).
+   Transform/opacity only (GPU cheap); honors reduced-motion.
+   ========================================================= */
+html { scroll-behavior: smooth; }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.65s ease, transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

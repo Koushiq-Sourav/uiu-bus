@@ -40,6 +40,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 5b. Telegram alerts (link + bus-near demo)
   if (typeof initTelegram === 'function') initTelegram();
 
+  // 5c. Scroll-reveal motion (up + down)
+  initScrollReveal();
+
   // 6. Navigation (Home / About / Search — all functional)
   initNavigation();
 
@@ -66,6 +69,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     await requestDriverLocation();
   }
 });
+
+/* =========================================================
+   PARTITION: SCROLL REVEAL — fade-up on scroll (up + down)
+   - Observes page blocks once; .visible sticks so scrolling back
+     up keeps them shown (no flicker), new blocks animate in.
+   - Siblings in a grid stagger slightly for a cascading feel.
+   - Skipped entirely under prefers-reduced-motion.
+   ========================================================= */
+function initScrollReveal() {
+  try {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!('IntersectionObserver' in window)) return;
+    const blocks = document.querySelectorAll(
+      'main section, #live-location-section > div, #about-section > div, #driver-dashboard > div, footer .container > div'
+    );
+    if (!blocks.length) return;
+    // Sibling stagger: children sharing a parent cascade 0/70/140ms.
+    const sibIndex = new Map();
+    blocks.forEach(el => {
+      const key = el.parentNode;
+      const i = sibIndex.get(key) || 0;
+      sibIndex.set(key, i + 1);
+      el.classList.add('reveal');
+      el.style.transitionDelay = `${Math.min(i, 3) * 70}ms`;
+    });
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    blocks.forEach(el => io.observe(el));
+  } catch {}
+}
 
 /* =========================================================
    PARTITION: NAVIGATION — every button functional
