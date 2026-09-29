@@ -191,6 +191,7 @@ async function Next() {
       if (cont) cont.innerHTML = '';
     } catch {}
     await loadBookedSeats();
+    if (typeof refreshRouteAvailability === 'function') { try { await refreshRouteAvailability(); } catch {} }
     document.getElementById('first-one').classList.add('hidden');
     document.getElementById('successfull-section').classList.remove('hidden');
   } catch (error) {

@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 4. Route selection
   initRouteDropdown();
+  if (typeof initShuttleCard === 'function') initShuttleCard();
 
   // 5. Live location / map
   initLiveMap();

@@ -30,6 +30,7 @@ async function loadTripAndSeats() {
     setInnerText('display-arrival-time', currentArrivalTime);
     if (typeof refreshBusPolling === 'function') { try { refreshBusPolling(); } catch {} }
     await loadBookedSeats();
+    if (typeof refreshRouteAvailability === 'function') { try { await refreshRouteAvailability(); } catch {} }
     if (typeof startSeatPolling === 'function') { try { startSeatPolling(); } catch {} }
   } catch (error) {
     console.error('Trip loading error:', error);
@@ -212,8 +213,51 @@ function startSeatPolling() {
       if (typeof document !== 'undefined' && document.hidden) return;
       if (!currentTripId || currentTripId === -1) return;
       await loadBookedSeats();
+      if (typeof refreshRouteAvailability === 'function') await refreshRouteAvailability();
     } catch {}
   }, 15000);
+}
+
+/* Per-route availability + live times for the student overview.
+   Paints "N left" on every Destination / live-map button and keeps the
+   shuttle card Departure/Arrival in sync after the driver retimes a trip.
+   Silent no-op in demo/offline mode. */
+async function refreshRouteAvailability() {
+  let data = null;
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const res = await fetch(`${API_BASE}route_availability.php?date=${encodeURIComponent(today)}`);
+    data = await res.json();
+    if (!res.ok || !data.success || !Array.isArray(data.routes)) return;
+  } catch { return; }
+  const byRoute = {};
+  data.routes.forEach(r => { byRoute[r.route_code] = r; });
+  document.querySelectorAll('.route-select-btn[data-route]').forEach(btn => {
+    const key = btn.getAttribute('data-route');
+    const info = byRoute[key];
+    if (!info || info.seats_left === null || info.seats_left === undefined) return;
+    if (!btn.dataset.base) btn.dataset.base = btn.textContent.trim();
+    btn.textContent = `${btn.dataset.base} · ${info.seats_left} left`;
+  });
+  document.querySelectorAll('.live-route-btn[data-live-route]').forEach(btn => {
+    const key = btn.getAttribute('data-live-route');
+    const info = byRoute[key];
+    if (!info || info.seats_left === null || info.seats_left === undefined) return;
+    if (!btn.dataset.base) btn.dataset.base = btn.textContent.trim();
+    btn.textContent = `${btn.dataset.base} · ${info.seats_left} left`;
+  });
+  // Live driver times for the CURRENT route (no reload needed to see retime).
+  const cur = byRoute[currentRoute];
+  if (cur && Number(cur.trip_id) === Number(currentTripId)) {
+    if (cur.departure_time) {
+      currentDepartureTime = cur.departure_time;
+      setInnerText('display-departure-time', cur.departure_time);
+    }
+    if (cur.arrival_time) {
+      currentArrivalTime = cur.arrival_time;
+      setInnerText('display-arrival-time', cur.arrival_time);
+    }
+  }
 }
 
 /* Live bus position for the CURRENT trip (student map + ETA).

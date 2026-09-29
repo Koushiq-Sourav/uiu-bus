@@ -133,3 +133,15 @@ function updateShuttleInfoSection(routeKey, routeData, { displayRouteName, displ
     });
   }
 }
+
+/* First-paint defaults: the card ships with stale "Dhaka-City" HTML until
+   the first route is picked. Fill it from the default route immediately so
+   students never see the placeholder; live DB times overwrite after. */
+function initShuttleCard() {
+  const routeData = (typeof busRoutes !== 'undefined') ? busRoutes[currentRoute] : null;
+  if (!routeData) return;
+  updateShuttleInfoSection(currentRoute, routeData, {
+    displayRouteName: document.getElementById('display-route-name'),
+    displayBoardingPoints: document.getElementById('display-boarding-points')
+  });
+}
