@@ -525,6 +525,22 @@
 </div>
 </div>
 </div>
+<div class="bg-white shadow-xl rounded-3xl p-6 mt-6 border border-slate-100" id="driver-timing-panel">
+<h2 class="text-lg font-bold text-slate-900">Trip Timing</h2>
+<p class="text-sm text-slate-500 mt-1 font-inter" id="driver-timing-trip">No active trip selected.</p>
+<div class="grid sm:grid-cols-3 gap-3 mt-4 font-inter items-end">
+<div>
+<label class="font-semibold text-sm text-slate-800 block mb-1" for="driver-departure-input">Departure time</label>
+<input class="input input-bordered w-full text-sm bg-white" id="driver-departure-input" type="time"/>
+</div>
+<div class="driver-stat"><span>Estimated arrival (road route)</span><strong id="driver-arrival-preview">--</strong></div>
+<div class="driver-stat"><span>Road</span><strong id="driver-route-info">--</strong></div>
+</div>
+<div class="flex flex-col sm:flex-row gap-3 mt-4 font-inter items-center">
+<button class="btn bg-lime-500 hover:bg-lime-600 text-white border-none font-bold flex-1" id="driver-timing-save" type="button">Save Departure Time</button>
+<span class="text-sm text-slate-500" id="driver-timing-status"></span>
+</div>
+</div>
 <div class="bg-white shadow-xl rounded-3xl p-6 mt-6 border border-slate-100">
 <h2 class="text-lg font-bold text-slate-900">Today's Trips</h2>
 <ul class="mt-4 space-y-3 font-inter" id="driver-trips-list"></ul>

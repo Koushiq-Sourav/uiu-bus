@@ -120,6 +120,10 @@ function wireAuthPortal() {
   on('driver-share-location-btn', () => toggleDriverLocationSharing(true));
   on('driver-stop-location-btn', () => toggleDriverLocationSharing(false));
   on('driver-back-website-btn', showApp);
+  // Trip timing: driver-set departure -> road-based arrival preview + save.
+  const depInput = document.getElementById('driver-departure-input');
+  if (depInput) depInput.addEventListener('input', () => { updateArrivalPreview(); });
+  on('driver-timing-save', saveDriverTiming);
 }
 
 /* =========================================================
@@ -435,6 +439,112 @@ function setDriverActiveTripId(tripId) {
     btn.querySelector('.driver-trip-live')?.classList.toggle('hidden', !isActive);
   });
   renderDriverLocation();
+  if (typeof refreshTimingPanel === 'function') { try { refreshTimingPanel(); } catch {} }
+}
+
+let driverTripsCache = [];
+let timingPreviewToken = 0;
+
+function timingHMtoSec(hm) {
+  const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(hm || '');
+  if (!m) return null;
+  const h = Number(m[1]), mi = Number(m[2]), s = Number(m[3] || 0);
+  if (h > 23 || mi > 59 || s > 59) return null;
+  return h * 3600 + mi * 60 + s;
+}
+
+function timingSecToHM(sec) {
+  sec = ((Math.round(sec) % 86400) + 86400) % 86400;
+  const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+  const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function getActiveTrip() {
+  const id = (typeof getDriverActiveTripId === 'function') ? getDriverActiveTripId() : null;
+  if (!id || !Array.isArray(driverTripsCache)) return null;
+  return driverTripsCache.find(t => Number(t.trip_id) === Number(id)) || null;
+}
+
+function refreshTimingPanel() {
+  const label = document.getElementById('driver-timing-trip');
+  const input = document.getElementById('driver-departure-input');
+  const trip = getActiveTrip();
+  if (!trip) {
+    if (label) label.innerText = 'No active trip selected.';
+    if (input && document.activeElement !== input) input.value = '';
+    updateArrivalPreview();
+    return;
+  }
+  if (label) label.innerText = `${trip.route_code || trip.route_name || ''} · ${trip.service_date || ''} · Trip #${trip.trip_id}`;
+  if (input && document.activeElement !== input) {
+    const cur = (trip.departure_time || '').slice(0, 5);
+    if (/^\d{2}:\d{2}$/.test(cur)) input.value = cur;
+  }
+  updateArrivalPreview();
+}
+
+async function updateArrivalPreview() {
+  const my = ++timingPreviewToken;
+  const preview = document.getElementById('driver-arrival-preview');
+  const roadEl = document.getElementById('driver-route-info');
+  const input = document.getElementById('driver-departure-input');
+  const trip = getActiveTrip();
+  const depHM = (input?.value || '').trim() || (trip?.departure_time || '').slice(0, 5);
+  const depSec = timingHMtoSec(depHM);
+  if (depSec === null || !trip) {
+    if (preview) preview.innerText = '--';
+    if (roadEl) roadEl.innerText = '--';
+    return null;
+  }
+  const routeKey = trip.route_code || trip.route_name;
+  let durationS = null, distanceM = null, live = false;
+  try {
+    if (routeKey && typeof getRouteStats === 'function') {
+      const st = await getRouteStats(routeKey);
+      if (my !== timingPreviewToken) return null;
+      if (st && Number.isFinite(st.durationS)) { durationS = st.durationS; distanceM = st.distanceM; live = !!st.live; }
+    }
+  } catch {}
+  if (durationS === null) {
+    // Fallback: keep the trip's own scheduled duration (default 90 min).
+    const a = timingHMtoSec((trip.arrival_time || '').slice(0, 8));
+    const d = timingHMtoSec((trip.departure_time || '').slice(0, 8));
+    durationS = (a !== null && d !== null && a > d) ? (a - d) : 90 * 60;
+  }
+  const arrHM = timingSecToHM(depSec + durationS);
+  if (preview) preview.innerText = arrHM;
+  if (roadEl) {
+    const mins = Math.round(durationS / 60);
+    const km = (distanceM !== null && Number.isFinite(distanceM)) ? ` · ${(distanceM / 1000).toFixed(1)} km` : '';
+    roadEl.innerText = live ? `~${mins} min${km} · live road` : `~${mins} min${km} · schedule`;
+  }
+  return { departure: depHM + ':00', arrival: arrHM + ':00', durationS };
+}
+
+async function saveDriverTiming() {
+  const status = document.getElementById('driver-timing-status');
+  const setStatus = (msg) => { if (status) status.innerText = msg; };
+  if (!isDriver()) { setStatus('Driver login required.'); return; }
+  const trip = getActiveTrip();
+  if (!trip) { setStatus('Select an active trip first.'); return; }
+  setStatus('Calculating road route…');
+  const calc = await updateArrivalPreview();
+  if (!calc) { setStatus('Enter a valid departure time (HH:MM).'); return; }
+  setStatus('Saving…');
+  try {
+    const res = await fetch(`${API_BASE}driver_update_trip.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: currentUser.token, trip_id: trip.trip_id, departure_time: calc.departure, arrival_time: calc.arrival })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) throw new Error(data.message || 'Could not save timing.');
+    setStatus(`Saved — departs ${calc.departure.slice(0, 5)}, arrives ~${calc.arrival.slice(0, 5)}. Students see it live.`);
+    await fetchDriverDashboard();
+  } catch (err) {
+    setStatus(err?.message || 'Could not save timing.');
+  }
 }
 
 function renderDriverDashboard(data) {
@@ -452,6 +562,7 @@ function renderDriverDashboard(data) {
   const list = document.getElementById('driver-trips-list');
   if (!list) return;
   const trips = Array.isArray(data?.trips) ? data.trips : [];
+  driverTripsCache = trips;
   list.innerHTML = '';
   if (!trips.length) {
     // Demo fallback: routes with default times
@@ -462,9 +573,11 @@ function renderDriverDashboard(data) {
         li.innerHTML = `<span class="font-bold">${key}</span><span>${r.title}</span><span>Dep ${r.departure} · Arr ${r.arrival}</span>`;
         list.appendChild(li);
       });
+      refreshTimingPanel();
       return;
     }
     list.innerHTML = '<li class="text-sm text-slate-500">No trips scheduled today.</li>';
+    refreshTimingPanel();
     return;
   }
   trips.forEach(t => {
@@ -489,6 +602,7 @@ function renderDriverDashboard(data) {
   });
   // Auto-select first trip so sharing always has a target (driver can change).
   if (!getDriverActiveTripId() && trips.length) setDriverActiveTripId(trips[0].trip_id);
+  refreshTimingPanel();
 }
 
 function renderDriverLocation() {

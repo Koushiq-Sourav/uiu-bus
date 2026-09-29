@@ -110,7 +110,8 @@ async function initLiveMap() {
 
 // Get a road-following route from OSRM. The points in liveRouteData are
 // waypoints/stops, not the final line. OSRM snaps and connects them using
-// the actual road network.
+// the actual road network. Duration/distance are cached alongside for ETA.
+let liveRouteStatsCache = {};
 async function getRoadRoute(routeKey) {
   if (liveRoadRouteCache[routeKey]) return liveRoadRouteCache[routeKey];
   const route = liveRouteData[routeKey];
@@ -124,10 +125,37 @@ async function getRoadRoute(routeKey) {
     if (!data.routes || !data.routes.length) throw new Error('No road route returned');
     const geometry = data.routes[0].geometry.coordinates.map(([lng, lat]) => ({ lat, lng }));
     liveRoadRouteCache[routeKey] = geometry;
+    if (Number.isFinite(data.routes[0].duration) && Number.isFinite(data.routes[0].distance)) {
+      liveRouteStatsCache[routeKey] = { durationS: data.routes[0].duration, distanceM: data.routes[0].distance, live: true };
+    }
     return geometry;
   } catch (err) {
     console.warn(`Could not load road route for ${routeKey}; using straight-line fallback.`, err);
     return route.path;
+  }
+}
+
+/* Road stats for ETA: { durationS, distanceM, live:true (OSRM) | false (fallback) }.
+   Reuses the full-route cache when showLiveRoute already fetched it;
+   otherwise does a light overview=false request for duration only. */
+async function getRouteStats(routeKey) {
+  if (liveRouteStatsCache[routeKey]) return liveRouteStatsCache[routeKey];
+  const route = liveRouteData[routeKey];
+  if (!route || !route.path || route.path.length < 2) return null;
+  const coords = route.path.map(p => `${p.lng},${p.lat}`).join(';');
+  const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=false&steps=false`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Routing HTTP ${response.status}`);
+    const data = await response.json();
+    if (!data.routes || !data.routes.length) throw new Error('No route stats returned');
+    const stats = { durationS: data.routes[0].duration, distanceM: data.routes[0].distance, live: true };
+    if (!Number.isFinite(stats.durationS) || !Number.isFinite(stats.distanceM)) throw new Error('Bad stats');
+    liveRouteStatsCache[routeKey] = stats;
+    return stats;
+  } catch (err) {
+    console.warn(`Could not load road stats for ${routeKey}; ETA falls back to schedule.`, err);
+    return { durationS: null, distanceM: null, live: false };
   }
 }
 
