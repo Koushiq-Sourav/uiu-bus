@@ -13,8 +13,13 @@
  *
  * Used by: save_telegram.php, bus_location.php, notify_nearby.php
  */
-const UIU_TELEGRAM_BOT_TOKEN = 'PASTE_BOT_TOKEN_HERE';
 const UIU_TELEGRAM_API_BASE = 'https://api.telegram.org/bot';
+// Token: hosting env UIU_TELEGRAM_BOT_TOKEN wins (Render/Docker), else the
+// pasted value below (XAMPP: chat @BotFather -> /newbot -> paste here).
+if (!defined('UIU_TELEGRAM_BOT_TOKEN')) {
+    $envToken = trim((string)(getenv('UIU_TELEGRAM_BOT_TOKEN') ?: ''));
+    define('UIU_TELEGRAM_BOT_TOKEN', $envToken !== '' ? $envToken : 'PASTE_BOT_TOKEN_HERE');
+}
 const UIU_NEARBY_RADIUS_M = 500;
 /** ETA alert settings. ETA is an estimate from straight-line GPS distance. */
 const UIU_ALERT_ETA_MINUTES = 5;

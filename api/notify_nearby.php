@@ -78,6 +78,23 @@ foreach ($tripIds as $tid) {
     $bkStmt->execute([$tid]);
     $rows = $bkStmt->fetchAll();
 
+    // Setup diagnostic: booked students with NO Chat ID linked can never
+    // be notified — surfaced so the driver/admin knows who to chase.
+    try {
+        $unlinkedStmt = $pdo->prepare("
+            SELECT COUNT(DISTINCT bsl.student_id) AS c
+            FROM bookings b
+            JOIN booking_student_links bsl ON bsl.booking_id = b.booking_id
+            LEFT JOIN telegram_links tl ON tl.student_id = bsl.student_id
+            WHERE b.trip_id = ? AND b.booking_status = 'CONFIRMED' AND tl.student_id IS NULL
+        ");
+        $unlinkedStmt->execute([$tid]);
+        $unlinked = (int)($unlinkedStmt->fetch()['c'] ?? 0);
+        if ($unlinked > 0) {
+            $skipped[] = ['trip_id' => $tid, 'reason' => $unlinked . ' booked student(s) have no Telegram Chat ID linked'];
+        }
+    } catch (Throwable $e) { /* diagnostic only */ }
+
     foreach ($rows as $row) {
         $hasFreshUserLocation = $row['user_lat'] !== null && $row['user_lng'] !== null
             && $row['user_updated_at'] !== null

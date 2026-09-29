@@ -18,6 +18,12 @@ if ($studentId === '' || $chatId === '') {
     json_response(false, 'Student ID and chat ID are required.', [], 400);
 }
 
+// Chat IDs are numeric (message @userinfobot to get yours) — usernames
+// like @someone can never receive bot messages, so reject them early.
+if (!preg_match('/^-?\d+$/', $chatId)) {
+    json_response(false, 'Chat ID must be numeric — message @userinfobot on Telegram to get yours.', [], 400);
+}
+
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS telegram_links (
         student_id VARCHAR(50) PRIMARY KEY,
