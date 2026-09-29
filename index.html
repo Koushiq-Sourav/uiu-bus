@@ -202,9 +202,16 @@
 </div>
 </div>
 <div class="bg-slate-50 rounded-2xl p-4 md:p-6 space-y-4 text-sm md:text-base font-inter">
-<div class="flex justify-between border-b border-slate-200 pb-3">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
 <span class="text-slate-500">Route</span>
-<span class="font-semibold text-slate-800" id="display-route-name">Dhaka-City</span>
+<select class="select select-bordered select-sm font-semibold text-slate-800 bg-white max-w-[220px]" id="shuttle-route-select">
+<option value="Dhanmondi">Dhanmondi</option>
+<option value="Mirpur">Mirpur</option>
+<option value="Signboard">Signboard</option>
+<option value="Jatrabari">Jatrabari</option>
+<option value="Palashi">Palashi</option>
+<option value="Uttara">Uttara</option>
+</select>
 </div>
 <div class="flex justify-between border-b border-slate-200 pb-3">
 <span class="text-slate-500">Departure Time</span>

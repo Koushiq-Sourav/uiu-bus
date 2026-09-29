@@ -47,6 +47,7 @@ const busRoutes = {
 };
 
 function initRouteDropdown() {
+  initShuttleRouteSelect();
   const routeButtons = document.querySelectorAll('.route-select-btn');
 
   routeButtons.forEach(button => {
@@ -68,12 +69,32 @@ function initRouteDropdown() {
   }
 }
 
+/* Route picker inside the UIU SHUTTLE SERVICE card.
+   Selecting a route runs the same selectRoute() flow, so the
+   Departure/Arrival shown are always the driver's live DB times. */
+function initShuttleRouteSelect() {
+  const sel = document.getElementById('shuttle-route-select');
+  if (!sel) return;
+  if (sel.dataset.wired) { syncShuttleRouteSelect(); return; }
+  sel.dataset.wired = '1';
+  sel.addEventListener('change', () => {
+    if (sel.value && sel.value !== currentRoute) selectRoute(sel.value);
+  });
+  syncShuttleRouteSelect();
+}
+
+function syncShuttleRouteSelect() {
+  const sel = document.getElementById('shuttle-route-select');
+  if (sel && currentRoute) sel.value = currentRoute;
+}
+
 /* Shared route-selection entry point: used by the Destination dropdown,
    the live-map buttons AND the Search results. */
 async function selectRoute(routeKey) {
   const routeData = busRoutes[routeKey];
   if (!routeData) return;
   currentRoute = routeKey;
+  if (typeof syncShuttleRouteSelect === 'function') syncShuttleRouteSelect();
   selectedSeatsList = [];
   selectedSeatCount = 0;
   setInnerText('selected-seat', 0);
@@ -140,6 +161,7 @@ function updateShuttleInfoSection(routeKey, routeData, { displayRouteName, displ
 function initShuttleCard() {
   const routeData = (typeof busRoutes !== 'undefined') ? busRoutes[currentRoute] : null;
   if (!routeData) return;
+  if (typeof syncShuttleRouteSelect === 'function') syncShuttleRouteSelect();
   updateShuttleInfoSection(currentRoute, routeData, {
     displayRouteName: document.getElementById('display-route-name'),
     displayBoardingPoints: document.getElementById('display-boarding-points')
