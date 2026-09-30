@@ -563,6 +563,48 @@ async function updateArrivalPreview() {
   return { departure: depHM + ':00', arrival: arrHM + ':00', durationS };
 }
 
+/* Demo live-apply: while the driver types a time, persist it (debounced)
+   so Today's Trips + the student view follow without pressing Save. */
+let demoTimingInputTimer = null;
+function onDepartureInput() {
+  updateArrivalPreview();
+  if (!isDriver()) return;
+  const trip = (typeof getActiveTrip === 'function') ? getActiveTrip() : null;
+  if (!trip) return;
+  const isDemo = Number(trip.trip_id) < 0 || String(currentUser?.token || '').startsWith('demo-');
+  if (!isDemo) return;
+  clearTimeout(demoTimingInputTimer);
+  demoTimingInputTimer = setTimeout(() => { applyDemoTiming(true); }, 800);
+}
+
+/* Demo mode (no backend): actually SAVE the timing on this device —
+   update the cached trip, persist per-route, repaint Today's Trips +
+   the student view. Returns true when a valid time was applied. */
+async function applyDemoTiming(silent) {
+  const trip = (typeof getActiveTrip === 'function') ? getActiveTrip() : null;
+  if (!trip) return false;
+  const calc = await updateArrivalPreview();
+  if (!calc) return false;
+  const routeKey = trip.route_code || trip.route_name;
+  trip.departure_time = calc.departure;
+  trip.arrival_time = calc.arrival;
+  if (routeKey && typeof setDemoTiming === 'function') setDemoTiming(routeKey, calc.departure, calc.arrival);
+  if (typeof renderDemoTripsList === 'function') { try { renderDemoTripsList(driverTripsCache); } catch {} }
+  if (typeof refreshTimingPanel === 'function') { try { refreshTimingPanel(); } catch {} }
+  if (routeKey && routeKey === currentRoute) {
+    currentDepartureTime = timing24to12(calc.departure);
+    currentArrivalTime = timing24to12(calc.arrival);
+    setInnerText('display-departure-time', currentDepartureTime);
+    setInnerText('display-arrival-time', currentArrivalTime);
+    if (typeof updateStopTimes === 'function') { try { updateStopTimes(); } catch {} }
+  }
+  const status = document.getElementById('driver-timing-status');
+  if (status) status.innerText = silent
+    ? `Auto-saved (demo) — departs ${calc.departure.slice(0, 5)}, arrives ~${calc.arrival.slice(0, 5)}.`
+    : `Saved (demo) — departs ${calc.departure.slice(0, 5)}, arrives ~${calc.arrival.slice(0, 5)}. Students see it on this device.`;
+  return true;
+}
+
 async function saveDriverTiming() {
   const status = document.getElementById('driver-timing-status');
   const setStatus = (msg) => { if (status) status.innerText = msg; };
