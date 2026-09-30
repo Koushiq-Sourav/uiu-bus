@@ -48,4 +48,17 @@ $pdo->exec("
 $stmt = $pdo->prepare('REPLACE INTO bus_locations (trip_id, lat, lng) VALUES (?, ?, ?)');
 $stmt->execute([$tripId, $lat, $lng]);
 
-json_response(true, 'Location saved.', ['trip_id' => $tripId, 'lat' => $lat, 'lng' => $lng]);
+// LIVE WIRING: push this fix to every subscribed student as a moving
+// Telegram pin (sendLocation live_period + editMessageLiveLocation).
+// Throttled + silent-fail inside — driver response never blocks on Telegram.
+$live = ['pushed' => 0, 'started' => 0, 'skipped' => []];
+try {
+    $heading = null;
+    if (isset($data['heading'])) {
+        $h = filter_var($data['heading'], FILTER_VALIDATE_INT);
+        if ($h !== false && $h >= 1 && $h <= 360) $heading = $h;
+    }
+    $live = uiu_push_live_bus($pdo, $tripId, (float)$lat, (float)$lng, $heading);
+} catch (Throwable $e) { /* live is best-effort */ }
+
+json_response(true, 'Location saved.', ['trip_id' => $tripId, 'lat' => $lat, 'lng' => $lng, 'telegram_live' => ['pushed' => $live['pushed'], 'started' => $live['started']]]);

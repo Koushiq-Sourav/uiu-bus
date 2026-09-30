@@ -24,7 +24,7 @@ services:
       - db_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "uiu", "-ppiu_pass"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "uiu", "-puiu_pass"]
       interval: 5s
       timeout: 3s
       retries: 20

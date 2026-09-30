@@ -20,6 +20,15 @@
 
 These are configurable estimates, not guaranteed arrival times. Change `UIU_AVG_BUS_SPEED_KMH`, `UIU_ROAD_DISTANCE_FACTOR`, and `UIU_ALERT_ETA_MINUTES` in `api/telegram_config.php` for your deployment.
 
+## LIVE bus pin in the bot (new)
+- Driver POSTs GPS to `api/bus_location.php` or `api/driver_location.php` (or `api/telegram_live.php`).
+- Server instantly pushes the fix to every CONFIRMED booking with a linked Chat ID as a Telegram LIVE location (`sendLocation live_period=900s`, 15 min).
+- Next fixes MOVE the same pin (`editMessageLiveLocation`) — no spam. Throttled: skips <15s + <30m moves; auto re-sends a fresh pin after ~14 min (expiry).
+- Cron `api/notify_nearby.php?all=1` also moves pins every minute, so the bot stays live even if the driver posts from only one endpoint.
+- Status: `GET api/telegram_live.php?trip_id=1` → bus position + live_pins count (no chat IDs exposed).
+- Stop: `POST api/telegram_live.php { token(DRIVER), trip_id, stop:true }` or `GET api/notify_nearby.php?stop_trip=1`.
+- New table `telegram_live (trip_id, student_id, chat_id, message_id, last_lat, last_lng)` — auto-created, also in `database/schema.sql`.
+
 ## Test without sending
 Open:
 `api/notify_nearby.php?trip_id=1&dry=1`

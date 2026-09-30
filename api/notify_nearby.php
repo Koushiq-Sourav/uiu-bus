@@ -46,10 +46,19 @@ function eta_minutes(float $distanceM): float {
 }
 
 $tripIds = nearby_trip_ids($pdo, $tripId, $all);
-if (!$tripIds) json_response(false, 'Pass ?trip_id= or ?all=1.', [], 400);
+if (!$tripIds) {
+    // Manual stop: /api/notify_nearby.php?stop_trip=ID stops all live pins.
+    $stopTrip = filter_input(INPUT_GET, 'stop_trip', FILTER_VALIDATE_INT);
+    if ($stopTrip) {
+        $stopped = uiu_stop_live_trip($pdo, (int)$stopTrip);
+        json_response(true, 'Live tracking stopped.', ['trip_id' => (int)$stopTrip, 'stopped' => $stopped]);
+    }
+    json_response(false, 'Pass ?trip_id= or ?all=1.', [], 400);
+}
 
 $notified = [];
 $skipped = [];
+$liveTotal = ['pushed' => 0, 'started' => 0];
 
 foreach ($tripIds as $tid) {
     $locStmt = $pdo->prepare('SELECT lat, lng, updated_at FROM bus_locations WHERE trip_id = ?');
@@ -63,6 +72,17 @@ foreach ($tripIds as $tid) {
     $trip = $tripStmt->fetch();
     if (!$trip) { $skipped[] = ['trip_id' => $tid, 'reason' => 'trip not found']; continue; }
     $route = $trip['route_code'];
+
+    // LIVE WIRING: every cron tick moves the Telegram pin for all
+    // subscribers (throttled inside). Runs even before the 5-min text
+    // alert so students see the bus approaching live in the bot.
+    if (!$dry) {
+        try {
+            $lp = uiu_push_live_bus($pdo, $tid, (float)$loc['lat'], (float)$loc['lng'], null);
+            $liveTotal['pushed'] += $lp['pushed'];
+            $liveTotal['started'] += $lp['started'];
+        } catch (Throwable $e) { /* best-effort */ }
+    }
 
     $start = UIU_ROUTE_STARTS[$route] ?? null;
 
@@ -145,6 +165,7 @@ foreach ($tripIds as $tid) {
 json_response(true, '5-minute ETA check done.', [
     'threshold_minutes' => UIU_ALERT_ETA_MINUTES,
     'average_speed_kmh' => UIU_AVG_BUS_SPEED_KMH,
+    'live' => $liveTotal,
     'notified' => $notified,
     'skipped' => $skipped,
 ]);

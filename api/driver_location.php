@@ -55,6 +55,8 @@ $stmt->execute([$user['username'], $lat, $lng, $accuracy === false ? null : $acc
 // MIRROR: same GPS fix becomes the bus position for this trip so the
 // student map + notify_nearby.php work without a second POST.
 $mirroredTripId = null;
+$livePushed = 0;
+$liveStarted = 0;
 if ($tripId) {
     $tripCheck = $pdo->prepare('SELECT trip_id FROM trips WHERE trip_id = ?');
     $tripCheck->execute([$tripId]);
@@ -70,11 +72,19 @@ if ($tripId) {
         $mirror = $pdo->prepare('REPLACE INTO bus_locations (trip_id, lat, lng) VALUES (?, ?, ?)');
         $mirror->execute([$tripId, $lat, $lng]);
         $mirroredTripId = (int)$tripId;
+        // LIVE WIRING: same fix moves the Telegram pin for all subscribers.
+        try {
+            require_once __DIR__ . '/telegram_config.php';
+            $live = uiu_push_live_bus($pdo, $mirroredTripId, (float)$lat, (float)$lng, null);
+            $livePushed = $live['pushed'];
+            $liveStarted = $live['started'];
+        } catch (Throwable $e) { /* best-effort */ }
     }
 }
 
 json_response(true, 'Location saved.', [
     'driver_id' => $user['username'],
     'location' => ['lat' => $lat, 'lng' => $lng, 'accuracy_m' => $accuracy === false ? null : $accuracy],
-    'mirrored_trip_id' => $mirroredTripId
+    'mirrored_trip_id' => $mirroredTripId,
+    'telegram_live' => ['pushed' => $livePushed, 'started' => $liveStarted]
 ]);

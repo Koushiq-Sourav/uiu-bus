@@ -47,12 +47,11 @@ CREATE TABLE IF NOT EXISTS seats (
   seat_code VARCHAR(4) UNIQUE  -- 'A1'..'J4'
 );
 
-INSERT INTO seats (seat_code)
+INSERT IGNORE INTO seats (seat_code)
 SELECT CONCAT(c.letter, n.d)
 FROM (SELECT 'A' letter UNION SELECT 'B' UNION SELECT 'C' UNION SELECT 'D' UNION SELECT 'E'
       UNION SELECT 'F' UNION SELECT 'G' UNION SELECT 'H' UNION SELECT 'I' UNION SELECT 'J') c
-CROSS JOIN (SELECT 1 d UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) n
-ON DUPLICATE KEY UPDATE seat_code = seat_code;
+CROSS JOIN (SELECT 1 d UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) n;
 
 -- --- Per-trip seat state ---
 CREATE TABLE IF NOT EXISTS trip_seats (
@@ -156,6 +155,20 @@ CREATE TABLE IF NOT EXISTS telegram_notifications (
   PRIMARY KEY (trip_id, student_id)
 );
 
+-- Live pins: one moving Telegram location message per (trip, student).
+-- message_id lets the server move the SAME pin via editMessageLiveLocation
+-- instead of spamming new messages. Auto-created by the APIs too.
+CREATE TABLE IF NOT EXISTS telegram_live (
+  trip_id INT NOT NULL,
+  student_id VARCHAR(50) NOT NULL,
+  chat_id VARCHAR(50) NOT NULL,
+  message_id BIGINT NOT NULL,
+  last_lat DOUBLE NOT NULL,
+  last_lng DOUBLE NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (trip_id, student_id)
+);
+
 CREATE TABLE IF NOT EXISTS user_locations (
   student_id VARCHAR(50) PRIMARY KEY,
   lat DOUBLE NOT NULL,
@@ -164,15 +177,15 @@ CREATE TABLE IF NOT EXISTS user_locations (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- --- Seed trips: every route × today + next 13 days ---
-INSERT INTO trips (route_id, service_date, departure_time, arrival_time, fare, trip_status)
+-- --- Seed trips: every route × today + next 13 days (IGNORE keeps
+-- existing rows untouched on re-import, so live trip_status is preserved) ---
+INSERT IGNORE INTO trips (route_id, service_date, departure_time, arrival_time, fare, trip_status)
 SELECT r.route_id, DATE(CURDATE() + INTERVAL nums.n DAY), '08:00:00', '09:30:00', 0.00, 'SCHEDULED'
 FROM routes r
 JOIN (
   SELECT 0 n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
   UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13
-) nums
-ON DUPLICATE KEY UPDATE trip_status = VALUES(trip_status);
+) nums;
 
 -- --- Seed trip_seats: 40 AVAILABLE seats for every trip ---
 INSERT INTO trip_seats (trip_id, seat_id, seat_status)

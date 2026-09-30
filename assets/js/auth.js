@@ -689,7 +689,29 @@ function toggleDriverLocationSharing(start) {
         driverLocationState.updatedAt = new Date();
         driverLocationState.sharing = true;
         renderDriverLocation();
-        try { await driverSendLocation(latitude, longitude, accuracy); } catch {}
+        // Throttle server POSTs: min 10s gap OR 20m move — the backend
+        // Telegram live push has its own 15s/30m throttle, but this cuts
+        // DB writes when GPS jitters every second.
+        try {
+          const now = Date.now();
+          const last = driverLocationState._lastSentAt || 0;
+          const prev = (driverLocationState._lastSentLat !== undefined)
+            ? { lat: driverLocationState._lastSentLat, lng: driverLocationState._lastSentLng }
+            : null;
+          let moved = Infinity;
+          if (prev) {
+            const rad = (d) => d * Math.PI / 180;
+            const dLa = rad(latitude - prev.lat), dLo = rad(longitude - prev.lng);
+            const h = Math.sin(dLa / 2) ** 2 + Math.cos(rad(prev.lat)) * Math.cos(rad(latitude)) * Math.sin(dLo / 2) ** 2;
+            moved = 2 * 6371000 * Math.asin(Math.sqrt(h));
+          }
+          if (now - last >= 10000 || moved >= 20) {
+            driverLocationState._lastSentAt = now;
+            driverLocationState._lastSentLat = latitude;
+            driverLocationState._lastSentLng = longitude;
+            await driverSendLocation(latitude, longitude, accuracy);
+          }
+        } catch {}
       },
       (err) => {
         driverLocationState.sharing = false;

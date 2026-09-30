@@ -16,3 +16,7 @@ services:
         sync: false
       - key: DB_PASS
         sync: false
+      - key: UIU_TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: UIU_TELEGRAM_WEBHOOK_SECRET
+        sync: false
