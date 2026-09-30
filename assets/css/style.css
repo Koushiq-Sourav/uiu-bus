@@ -428,6 +428,27 @@ html {
   font-size: 14px;
 }
 
+/* Unbook button [PARTITION: MY BOOKINGS] — red outline, sits at row end */
+.btn-unbook {
+  margin-left: auto;
+  background: #fff;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 9999px;
+  padding: 4px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-unbook:hover {
+  background: #dc2626;
+  color: #fff;
+}
+#my-booking-banner .btn-unbook {
+  margin-left: 8px;
+}
+
 /* =========================================================
    15. DRIVER DASHBOARD  [PARTITION: DRIVER]
    ========================================================= */
@@ -607,6 +628,7 @@ html[data-theme='dark'] .about-feature-text { color: #94a3b8; }
 html[data-theme='dark'] .about-feature-title { color: #f1f5f9; }
 html[data-theme='dark'] .my-booking-row,
 html[data-theme='dark'] .driver-trip-row { color: #cbd5e1; }
+html[data-theme='dark'] .btn-unbook { background: transparent; }
 html[data-theme='dark'] .driver-stat strong { color: #f1f5f9; }
 html[data-theme='dark'] .driver-stat span { color: #94a3b8; }
 html[data-theme='dark'] #driver-location-status { color: #e2e8f0; }
