@@ -568,7 +568,22 @@ async function saveDriverTiming() {
   const calc = await updateArrivalPreview();
   if (!calc) { setStatus('Enter a valid departure time (HH:MM).'); return; }
   if (Number(trip.trip_id) < 0 || String(currentUser?.token || '').startsWith('demo-')) {
-    setStatus(`Demo preview — departs ${calc.departure.slice(0, 5)}, arrives ~${calc.arrival.slice(0, 5)}. Connect XAMPP to save it live.`);
+    // Demo mode (no backend): actually SAVE it on this device — update the
+    // cached trip, persist per-route, repaint Today's Trips + student view.
+    const routeKey = trip.route_code || trip.route_name;
+    trip.departure_time = calc.departure;
+    trip.arrival_time = calc.arrival;
+    if (routeKey && typeof setDemoTiming === 'function') setDemoTiming(routeKey, calc.departure, calc.arrival);
+    if (typeof renderDemoTripsList === 'function') { try { renderDemoTripsList(driverTripsCache); } catch {} }
+    if (typeof refreshTimingPanel === 'function') { try { refreshTimingPanel(); } catch {} }
+    if (routeKey && routeKey === currentRoute) {
+      currentDepartureTime = timing24to12(calc.departure);
+      currentArrivalTime = timing24to12(calc.arrival);
+      setInnerText('display-departure-time', currentDepartureTime);
+      setInnerText('display-arrival-time', currentArrivalTime);
+      if (typeof updateStopTimes === 'function') { try { updateStopTimes(); } catch {} }
+    }
+    setStatus(`Saved (demo) — departs ${calc.departure.slice(0, 5)}, arrives ~${calc.arrival.slice(0, 5)}. Students see it on this device.`);
     return;
   }
   setStatus('Saving…');
