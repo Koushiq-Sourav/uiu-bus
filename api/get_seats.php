@@ -56,7 +56,7 @@ $authUser = current_user($pdo);
 if ($authUser && $authUser['role'] === 'STUDENT') {
     try {
         $mineStmt = $pdo->prepare("
-            SELECT b.booking_reference, s.seat_code
+            SELECT b.booking_id, b.booking_reference, s.seat_code
             FROM booking_student_links bsl
             JOIN bookings b ON b.booking_id = bsl.booking_id
             JOIN booking_seats bs ON bs.booking_id = b.booking_id
@@ -70,7 +70,7 @@ if ($authUser && $authUser['role'] === 'STUDENT') {
         $mineStmt->execute([$tripId, $authUser['username']]);
         $mine = $mineStmt->fetch();
         if ($mine) {
-            $studentBooking = ['seat_code' => $mine['seat_code'], 'booking_reference' => $mine['booking_reference']];
+            $studentBooking = ['booking_id' => (int)$mine['booking_id'], 'seat_code' => $mine['seat_code'], 'booking_reference' => $mine['booking_reference']];
         }
     } catch (Throwable $e) {
         $studentBooking = null;

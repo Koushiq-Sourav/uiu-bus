@@ -156,7 +156,24 @@ function restoreDemoSeatAvailability() {
   } catch {}
 }
 
-/* Current STUDENT's booking list (My Bookings). Returns [] in demo mode. */
+/* Cancel the logged-in STUDENT's own CONFIRMED booking (Unbook).
+   POST api/cancel_booking.php { token, booking_id }.
+   Returns the freed { booking } or throws with the server message. */
+async function cancelBooking(bookingId) {
+  if (!currentUser || currentUser.role !== 'STUDENT') throw new Error('Student login required.');
+  const headers = { 'Content-Type': 'application/json' };
+  if (currentUser.token) headers['token'] = currentUser.token;
+  const res = await fetch(`${API_BASE}cancel_booking.php`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ token: currentUser.token, booking_id: bookingId })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) throw new Error((data && data.message) || 'Could not cancel booking.');
+  return data.booking;
+}
+
+/* Demo/offline unbook: frees the seat in this browser's registries. */
 async function fetchUserBookings() {
   if (!currentUser || currentUser.role !== 'STUDENT') return [];
   try {
