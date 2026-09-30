@@ -448,6 +448,14 @@ html {
 #my-booking-banner .btn-unbook {
   margin-left: 8px;
 }
+/* Booking Details panel Unbook — full-width red outline under Book Now */
+#unbook-btn {
+  margin-left: 0;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  font-size: 16px;
+}
 
 /* =========================================================
    15. DRIVER DASHBOARD  [PARTITION: DRIVER]

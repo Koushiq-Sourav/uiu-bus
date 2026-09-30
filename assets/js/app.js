@@ -203,6 +203,16 @@ function updateMyBookingBanner() {
   } else {
     banner.classList.add('hidden');
   }
+  // Booking Details panel: show its Unbook button only while this trip is booked.
+  const detailsBtn = document.getElementById('unbook-btn');
+  if (detailsBtn) {
+    if (studentTripBooking && isStudent()) {
+      detailsBtn.classList.remove('hidden');
+      detailsBtn.onclick = () => unbookCurrentTrip();
+    } else {
+      detailsBtn.classList.add('hidden');
+    }
+  }
 }
 
 /* Unbook the student's booking on the CURRENT trip (banner button).
