@@ -37,8 +37,12 @@ async function loadTripAndSeats() {
     // Demo fallback (same pattern as auth.js): allow booking without XAMPP/DB
     // so Next() does not stop at "Trip information is not loaded yet".
     currentTripId = -1;
-    currentDepartureTime = (typeof busRoutes !== 'undefined' && busRoutes[currentRoute] && busRoutes[currentRoute].departure) || '';
-    currentArrivalTime = (typeof busRoutes !== 'undefined' && busRoutes[currentRoute] && busRoutes[currentRoute].arrival) || '';
+    // Demo: prefer driver-saved times on this device, else per-route defaults.
+    const demoOv = (typeof getDemoTiming === 'function') ? getDemoTiming(currentRoute) : null;
+    currentDepartureTime = ((demoOv && demoOv.departure && typeof timing24to12 === 'function') ? timing24to12(demoOv.departure) : null)
+      || (typeof busRoutes !== 'undefined' && busRoutes[currentRoute] && busRoutes[currentRoute].departure) || '';
+    currentArrivalTime = ((demoOv && demoOv.arrival && typeof timing24to12 === 'function') ? timing24to12(demoOv.arrival) : null)
+      || (typeof busRoutes !== 'undefined' && busRoutes[currentRoute] && busRoutes[currentRoute].arrival) || '';
     setInnerText('display-departure-time', currentDepartureTime);
     setInnerText('display-arrival-time', currentArrivalTime);
     if (typeof refreshBusPolling === 'function') { try { refreshBusPolling(); } catch {} }

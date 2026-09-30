@@ -199,9 +199,13 @@ async function updateStopTimes() {
 
 function updateShuttleInfoSection(routeKey, routeData, { displayRouteName, displayBoardingPoints }) {
   if (displayRouteName) displayRouteName.innerText = routeKey;
-  // Departure / arrival times (fallback per-route; api.js overwrites with live DB times)
-  currentDepartureTime = routeData.departure || '';
-  currentArrivalTime = routeData.arrival || '';
+  // Departure / arrival times (fallback per-route; api.js overwrites with live DB times).
+  // Demo: prefer driver-saved times on this device so the student card matches Trip Timing.
+  const routeOv = (typeof getDemoTiming === 'function') ? getDemoTiming(routeKey) : null;
+  currentDepartureTime = ((routeOv && routeOv.departure && typeof timing24to12 === 'function') ? timing24to12(routeOv.departure) : null)
+    || routeData.departure || '';
+  currentArrivalTime = ((routeOv && routeOv.arrival && typeof timing24to12 === 'function') ? timing24to12(routeOv.arrival) : null)
+    || routeData.arrival || '';
   setInnerText('display-departure-time', currentDepartureTime);
   setInnerText('display-arrival-time', currentArrivalTime);
   if (displayBoardingPoints) {

@@ -644,27 +644,21 @@ function renderDriverDashboard(data) {
     // Negative IDs can never collide with real trip_ids; Save is blocked
     // in demo with a "connect XAMPP" note instead of failing silently.
     if (typeof busRoutes !== 'undefined') {
-      const demoTrips = Object.entries(busRoutes).map(([key, r], i) => ({
-        trip_id: -(i + 1),
-        route_code: key,
-        route_name: r.title,
-        service_date: 'demo',
-        departure_time: busTimeTo24(r.departure),
-        arrival_time: busTimeTo24(r.arrival),
-        seats_left: '?'
-      }));
-      driverTripsCache = demoTrips;
-      demoTrips.forEach(t => {
-        const li = document.createElement('li');
-        const isActive = Number(t.trip_id) === getDriverActiveTripId();
-        li.className = 'driver-trip-row' + (isActive ? ' driver-trip-active' : '');
-        li.setAttribute('data-trip-id', String(t.trip_id));
-        li.innerHTML = `<span class="font-bold">${t.route_code}</span><span>${t.route_name}</span><span>Dep ${t.departure_time.slice(0, 5)} · Arr ${t.arrival_time.slice(0, 5)} · demo</span>
-          <span class="driver-trip-live badge badge-success gap-1 ${isActive ? '' : 'hidden'}">● LIVE bus marker</span>
-          <button type="button" class="btn btn-xs driver-trip-set ${isActive ? 'hidden' : ''}">Set Active</button>`;
-        li.querySelector('.driver-trip-set')?.addEventListener('click', () => setDriverActiveTripId(t.trip_id));
-        list.appendChild(li);
+      const demoTrips = Object.entries(busRoutes).map(([key, r], i) => {
+        // Re-apply driver-saved demo times so a refresh keeps the new times.
+        const ov = (typeof getDemoTiming === 'function') ? getDemoTiming(key) : null;
+        return {
+          trip_id: -(i + 1),
+          route_code: key,
+          route_name: r.title,
+          service_date: 'demo',
+          departure_time: (ov && ov.departure) || busTimeTo24(r.departure),
+          arrival_time: (ov && ov.arrival) || busTimeTo24(r.arrival),
+          seats_left: '?'
+        };
       });
+      driverTripsCache = demoTrips;
+      renderDemoTripsList(demoTrips);
       if (!demoTrips.some(t => Number(t.trip_id) === getDriverActiveTripId())) setDriverActiveTripId(demoTrips[0].trip_id);
       else refreshTimingPanel();
       return;
