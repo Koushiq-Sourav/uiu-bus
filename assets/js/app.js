@@ -196,10 +196,64 @@ function updateMyBookingBanner() {
     banner.classList.remove('hidden');
     text.innerHTML = `You have already booked seat <strong>${studentTripBooking.seat_code}</strong> on this route` +
       (studentTripBooking.booking_reference ? ` (Ref: ${studentTripBooking.booking_reference})` : '') +
-      `. One student ID can select only one seat.`;
+      `. One student ID can select only one seat. ` +
+      `<button id="banner-unbook-btn" class="btn-unbook" type="button">Unbook</button>`;
+    const btn = document.getElementById('banner-unbook-btn');
+    if (btn) btn.onclick = () => unbookCurrentTrip();
   } else {
     banner.classList.add('hidden');
   }
+}
+
+/* Unbook the student's booking on the CURRENT trip (banner button).
+   Server booking -> POST cancel; demo booking (no id) -> local free. */
+async function unbookCurrentTrip() {
+  if (!studentTripBooking) return;
+  await unbookBooking(studentTripBooking.booking_id || null, studentTripBooking.seat_code, currentRoute);
+}
+
+/* Unbook one booking by id (My Bookings list button).
+   bookingId null = demo/offline booking, freed in this browser only. */
+async function unbookBooking(bookingId, seatCode, routeCode) {
+  if (!confirm(`Unbook seat ${seatCode}? You can book again later if seats are free.`)) return;
+  // Demo/offline booking — no server row, free it locally.
+  if (!bookingId) {
+    unbookDemoSeat(routeCode);
+    studentTripBooking = null;
+    if (typeof restoreDemoSeatAvailability === 'function') { try { restoreDemoSeatAvailability(); } catch {} }
+    updateMyBookingBanner();
+    await renderMyBookings();
+    if (typeof validateNextButton === 'function') validateNextButton();
+    alert(`Unbooked. Seat ${seatCode} is free again.`);
+    return;
+  }
+  try {
+    await cancelBooking(bookingId);
+    studentTripBooking = null;
+    if (typeof loadBookedSeats === 'function') { try { await loadBookedSeats(); } catch {} }
+    if (typeof refreshRouteAvailability === 'function') { try { await refreshRouteAvailability(); } catch {} }
+    updateMyBookingBanner();
+    await renderMyBookings();
+    if (typeof validateNextButton === 'function') validateNextButton();
+    alert(`Unbooked. Seat ${seatCode} is free again.`);
+  } catch (err) {
+    console.error('Unbook error:', err);
+    alert((err && err.message) || 'Could not unbook. Please try again.');
+  }
+}
+
+/* Remove a demo booking from this browser's registries. */
+function unbookDemoSeat(routeCode) {
+  try {
+    const seatsReg = JSON.parse(localStorage.getItem(DEMO_BOOKED_SEATS_KEY) || '{}');
+    const routeSeats = seatsReg[routeCode] || [];
+    const seat = studentTripBooking ? studentTripBooking.seat_code : null;
+    seatsReg[routeCode] = routeSeats.filter(s => s !== seat);
+    localStorage.setItem(DEMO_BOOKED_SEATS_KEY, JSON.stringify(seatsReg));
+    const studentReg = JSON.parse(localStorage.getItem(DEMO_STUDENT_BOOKINGS_KEY) || '{}');
+    delete studentReg[currentUser.username + '_' + routeCode];
+    localStorage.setItem(DEMO_STUDENT_BOOKINGS_KEY, JSON.stringify(studentReg));
+  } catch {}
 }
 
 async function renderMyBookings() {
@@ -231,7 +285,13 @@ async function renderMyBookings() {
     li.className = 'my-booking-row';
     li.innerHTML = `<span class="font-bold">${b.seat_codes || ''}</span>
       <span>${b.route_code || b.route_name || ''} · ${b.service_date || ''}</span>
-      <span class="text-slate-500">${b.booking_reference || ''}</span>`;
+      <span class="text-slate-500">${b.booking_reference || ''}</span>
+      <button class="btn-unbook" type="button">Unbook</button>`;
+    const btn = li.querySelector('.btn-unbook');
+    if (btn) {
+      const bid = b.booking_id ? parseInt(b.booking_id, 10) : null;
+      btn.onclick = () => unbookBooking(bid, b.seat_codes, b.route_code);
+    }
     list.appendChild(li);
   });
 }
