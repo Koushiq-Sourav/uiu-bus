@@ -1,4 +1,4 @@
-services:
+push services:
   web:
     build: .
     ports:
