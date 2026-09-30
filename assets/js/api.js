@@ -173,7 +173,7 @@ async function cancelBooking(bookingId) {
   return data.booking;
 }
 
-/* Demo/offline unbook: frees the seat in this browser's registries. */
+/* Current STUDENT's booking list (My Bookings). Returns [] in demo mode. */
 async function fetchUserBookings() {
   if (!currentUser || currentUser.role !== 'STUDENT') return [];
   try {

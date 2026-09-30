@@ -138,7 +138,7 @@ async function Next() {
     if (tgNoteDemo) tgNoteDemo.innerText = tgChatId
       ? '🚌 Bus-near Telegram alerts ON for this booking.'
       : '🚌 Tip: add your Telegram Chat ID next time for bus-near alerts.';
-    studentTripBooking = { seat_code: selectedSeatsList[0], booking_reference: demoRef };
+    studentTripBooking = { booking_id: null, seat_code: selectedSeatsList[0], booking_reference: demoRef };
     clearPendingSelection();
     document.getElementById('first-one').classList.add('hidden');
     document.getElementById('successfull-section').classList.remove('hidden');
@@ -179,7 +179,7 @@ async function Next() {
     if (tgNote) tgNote.innerText = tgChatId
       ? '🚌 Bus-near Telegram alerts ON for this booking.'
       : '🚌 Tip: add your Telegram Chat ID next time for bus-near alerts.';
-    studentTripBooking = { seat_code: selectedSeatsList[0], booking_reference: data.booking ? data.booking.booking_reference : '' };
+    studentTripBooking = { booking_id: data.booking ? data.booking.booking_id : null, seat_code: selectedSeatsList[0], booking_reference: data.booking ? data.booking.booking_reference : '' };
     clearPendingSelection();
     // Clear my picker silently BEFORE the fresh repaint — otherwise the
     // just-booked seat looks like "taken by someone else" and mis-alerts.
