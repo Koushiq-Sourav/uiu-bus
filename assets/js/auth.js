@@ -602,6 +602,25 @@ async function saveDriverTiming() {
   }
 }
 
+/* Demo trips list renderer — reused after a demo timing save so the
+   Dep/Arr times in Today's Trips repaint without a backend refetch. */
+function renderDemoTripsList(demoTrips) {
+  const list = document.getElementById('driver-trips-list');
+  if (!list || !Array.isArray(demoTrips)) return;
+  list.innerHTML = '';
+  demoTrips.forEach(t => {
+    const li = document.createElement('li');
+    const isActive = Number(t.trip_id) === getDriverActiveTripId();
+    li.className = 'driver-trip-row' + (isActive ? ' driver-trip-active' : '');
+    li.setAttribute('data-trip-id', String(t.trip_id));
+    li.innerHTML = `<span class="font-bold">${t.route_code}</span><span>${t.route_name}</span><span>Dep ${t.departure_time.slice(0, 5)} · Arr ${t.arrival_time.slice(0, 5)} · demo</span>
+      <span class="driver-trip-live badge badge-success gap-1 ${isActive ? '' : 'hidden'}">● LIVE bus marker</span>
+      <button type="button" class="btn btn-xs driver-trip-set ${isActive ? 'hidden' : ''}">Set Active</button>`;
+    li.querySelector('.driver-trip-set')?.addEventListener('click', () => setDriverActiveTripId(t.trip_id));
+    list.appendChild(li);
+  });
+}
+
 function renderDriverDashboard(data) {
   const nameEl = document.getElementById('driver-name');
   const idEl = document.getElementById('driver-id');
