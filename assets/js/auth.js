@@ -469,6 +469,33 @@ function busTimeTo24(t) {
   return `${String(h).padStart(2, '0')}:${m[2]}:00`;
 }
 
+/* Demo timing store (no backend): driver-set times per route, shared on
+   this device between the driver dashboard and the student view.
+   Values are 24h "HH:MM:SS" like DB TIME columns. */
+const DEMO_TIMING_KEY = 'uiu_bus_demo_timing';
+function getDemoTiming(routeKey) {
+  try {
+    const all = JSON.parse(localStorage.getItem(DEMO_TIMING_KEY) || '{}');
+    return (routeKey && all[routeKey]) || null;
+  } catch { return null; }
+}
+function setDemoTiming(routeKey, departure24, arrival24) {
+  try {
+    const all = JSON.parse(localStorage.getItem(DEMO_TIMING_KEY) || '{}');
+    all[routeKey] = { departure: departure24, arrival: arrival24 };
+    localStorage.setItem(DEMO_TIMING_KEY, JSON.stringify(all));
+  } catch {}
+}
+/* "14:30:00" -> "02:30 PM" (student display format, like busRoutes). */
+function timing24to12(t) {
+  const m = /^(\d{1,2}):(\d{2})/.exec(t || '');
+  if (!m) return t || '';
+  let h = Number(m[1]);
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${String(h).padStart(2, '0')}:${m[2]} ${ap}`;
+}
+
 function getActiveTrip() {
   const id = (typeof getDriverActiveTripId === 'function') ? getDriverActiveTripId() : null;
   if (!id || !Array.isArray(driverTripsCache)) return null;
