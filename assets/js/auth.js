@@ -121,8 +121,13 @@ function wireAuthPortal() {
   on('driver-stop-location-btn', () => toggleDriverLocationSharing(false));
   on('driver-back-website-btn', showApp);
   // Trip timing: driver-set departure -> road-based arrival preview + save.
+  // Demo mode auto-applies while typing (Today's Trips + student times
+  // follow instantly); real backend still saves via the Save button.
   const depInput = document.getElementById('driver-departure-input');
-  if (depInput) depInput.addEventListener('input', () => { updateArrivalPreview(); });
+  if (depInput) {
+    depInput.addEventListener('input', () => { onDepartureInput(); });
+    depInput.addEventListener('change', () => { onDepartureInput(); });
+  }
   on('driver-timing-save', saveDriverTiming);
 }
 
@@ -564,28 +569,14 @@ async function saveDriverTiming() {
   if (!isDriver()) { setStatus('Driver login required.'); return; }
   const trip = getActiveTrip();
   if (!trip) { setStatus('Select an active trip first.'); return; }
+  if (Number(trip.trip_id) < 0 || String(currentUser?.token || '').startsWith('demo-')) {
+    const ok = await applyDemoTiming(false);
+    if (!ok) setStatus('Enter a valid departure time (HH:MM).');
+    return;
+  }
   setStatus('Calculating road route…');
   const calc = await updateArrivalPreview();
   if (!calc) { setStatus('Enter a valid departure time (HH:MM).'); return; }
-  if (Number(trip.trip_id) < 0 || String(currentUser?.token || '').startsWith('demo-')) {
-    // Demo mode (no backend): actually SAVE it on this device — update the
-    // cached trip, persist per-route, repaint Today's Trips + student view.
-    const routeKey = trip.route_code || trip.route_name;
-    trip.departure_time = calc.departure;
-    trip.arrival_time = calc.arrival;
-    if (routeKey && typeof setDemoTiming === 'function') setDemoTiming(routeKey, calc.departure, calc.arrival);
-    if (typeof renderDemoTripsList === 'function') { try { renderDemoTripsList(driverTripsCache); } catch {} }
-    if (typeof refreshTimingPanel === 'function') { try { refreshTimingPanel(); } catch {} }
-    if (routeKey && routeKey === currentRoute) {
-      currentDepartureTime = timing24to12(calc.departure);
-      currentArrivalTime = timing24to12(calc.arrival);
-      setInnerText('display-departure-time', currentDepartureTime);
-      setInnerText('display-arrival-time', currentArrivalTime);
-      if (typeof updateStopTimes === 'function') { try { updateStopTimes(); } catch {} }
-    }
-    setStatus(`Saved (demo) — departs ${calc.departure.slice(0, 5)}, arrives ~${calc.arrival.slice(0, 5)}. Students see it on this device.`);
-    return;
-  }
   setStatus('Saving…');
   try {
     const res = await fetch(`${API_BASE}driver_update_trip.php`, {
